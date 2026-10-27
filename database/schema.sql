@@ -226,6 +226,7 @@ CREATE TABLE employee_documents (
     uploaded_by  BIGINT       NULL,      -- users.id of the uploader
     expiry_date  DATE         NULL,
     visibility   ENUM('SELF_AND_HR','HR_ONLY') NOT NULL DEFAULT 'SELF_AND_HR',
+    uploaded_at  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),  -- server time of the upload, never changed afterwards
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

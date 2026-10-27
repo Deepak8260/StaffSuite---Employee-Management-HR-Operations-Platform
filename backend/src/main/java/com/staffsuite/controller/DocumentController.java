@@ -72,6 +72,24 @@ public class DocumentController {
                 .body(file.resource());
     }
 
+    /**
+     * The PDF with an inline disposition, for the in-app viewer. Same access check as the download; the
+     * frontend fetches it with the user's token and shows it from memory, so nothing is saved to disk.
+     */
+    @GetMapping("/documents/{id}/view")
+    public ResponseEntity<Resource> view(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id,
+            HttpServletRequest http) {
+        DocumentDownload file = documentService.view(actor, id, http.getRemoteAddr());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline().filename(file.fileName(), java.nio.charset.StandardCharsets.UTF_8)
+                                .build().toString())
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Cache-Control", "no-store")
+                .body(file.resource());
+    }
+
     @DeleteMapping("/documents/{id}")
     @PreAuthorize(HR_OR_ADMIN)
     public ResponseEntity<Void> delete(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id,

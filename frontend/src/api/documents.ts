@@ -49,6 +49,15 @@ export async function downloadDocument(doc: Pick<EmployeeDocument, 'id' | 'fileN
   URL.revokeObjectURL(url)
 }
 
+/**
+ * Fetches a stored PDF through the access-checked view endpoint (with the user's token) and returns a
+ * temporary in-memory URL for the viewer. Nothing is saved; call URL.revokeObjectURL when done.
+ */
+export async function fetchPdfObjectUrl(id: number): Promise<string> {
+  const res = await api.get<Blob>(`/api/v1/documents/${id}/view`, { responseType: 'blob' })
+  return URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+}
+
 export async function listExpiringDocuments(days?: number, includeExpired = false): Promise<EmployeeDocument[]> {
   const { data } = await api.get<EmployeeDocument[]>('/api/v1/documents/expiring', { params: { days, includeExpired } })
   return data

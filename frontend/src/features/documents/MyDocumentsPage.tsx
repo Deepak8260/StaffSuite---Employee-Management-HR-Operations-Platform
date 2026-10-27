@@ -4,6 +4,7 @@ import { downloadDocument, listCategories, listDocuments } from '../../api/docum
 import { useAuth } from '../../hooks/useAuth'
 import type { DocumentCategory, EmployeeDocument } from '../../types/documents'
 import DocumentList from './DocumentList'
+import StoredPdfViewer from './StoredPdfViewer'
 import UploadForm from './UploadForm'
 
 export default function MyDocumentsPage() {
@@ -12,6 +13,7 @@ export default function MyDocumentsPage() {
   const [documents, setDocuments] = useState<EmployeeDocument[]>([])
   const [categories, setCategories] = useState<DocumentCategory[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [viewing, setViewing] = useState<EmployeeDocument | null>(null)
 
   const load = useCallback(async () => {
     if (employeeId === null) return
@@ -64,8 +66,10 @@ export default function MyDocumentsPage() {
 
       <section>
         <h2>Your documents</h2>
-        <DocumentList documents={documents} onDownload={handleDownload} />
+        <DocumentList documents={documents} onDownload={handleDownload} onView={setViewing} />
       </section>
+
+      {viewing && <StoredPdfViewer document={viewing} onClose={() => setViewing(null)} />}
     </main>
   )
 }

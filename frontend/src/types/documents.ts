@@ -23,6 +23,8 @@ export interface EmployeeDocument {
   expired: boolean
   visibility: DocumentVisibility
   uploadedByName: string | null
+  /** Server time of the upload (ISO instant). */
+  uploadedAt: string
   createdAt: string
 }
 

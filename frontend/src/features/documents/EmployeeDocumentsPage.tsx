@@ -5,6 +5,7 @@ import { deleteDocument, downloadDocument, listCategories, listDocuments } from 
 import { useReferenceData } from '../../hooks/useReferenceData'
 import type { DocumentCategory, EmployeeDocument } from '../../types/documents'
 import DocumentList from './DocumentList'
+import StoredPdfViewer from './StoredPdfViewer'
 import UploadForm from './UploadForm'
 
 /** HR/Admin: pick an employee, then view, upload (on their behalf) and delete their documents. */
@@ -16,6 +17,7 @@ export default function EmployeeDocumentsPage() {
   const [documents, setDocuments] = useState<EmployeeDocument[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [viewing, setViewing] = useState<EmployeeDocument | null>(null)
 
   const load = useCallback(async () => {
     if (selectedId === null) return
@@ -80,10 +82,11 @@ export default function EmployeeDocumentsPage() {
           <section>
             <h2>Documents</h2>
             {documents && (
-              <DocumentList documents={documents} onDownload={handleDownload} onDelete={handleDelete}
+              <DocumentList documents={documents} onDownload={handleDownload} onView={setViewing} onDelete={handleDelete}
                 emptyText="This employee has no documents yet." />
             )}
           </section>
+          {viewing && <StoredPdfViewer document={viewing} onClose={() => setViewing(null)} />}
         </>
       )}
       {selectedId === null && <p className="hint">Choose an employee to see and manage their documents.</p>}

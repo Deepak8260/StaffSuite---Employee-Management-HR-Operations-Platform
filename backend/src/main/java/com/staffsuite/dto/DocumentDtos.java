@@ -42,6 +42,7 @@ public final class DocumentDtos {
             boolean expired,
             DocumentVisibility visibility,
             String uploadedByName,
+            Instant uploadedAt,
             Instant createdAt) {
     }
 }

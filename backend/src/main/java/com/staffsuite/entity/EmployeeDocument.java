@@ -16,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,6 +66,13 @@ public class EmployeeDocument {
     @Column(nullable = false)
     private DocumentVisibility visibility = DocumentVisibility.SELF_AND_HR;
 
+    /**
+     * When the upload happened, taken from the server clock (never from the client) and never changed
+     * afterwards. Stored with millisecond precision.
+     */
+    @Column(name = "uploaded_at", nullable = false, updatable = false)
+    private Instant uploadedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -72,4 +80,12 @@ public class EmployeeDocument {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /** Safety net: the service sets this from its clock, but a row can never be saved without it. */
+    @PrePersist
+    void ensureUploadedAt() {
+        if (uploadedAt == null) {
+            uploadedAt = Instant.now();
+        }
+    }
 }

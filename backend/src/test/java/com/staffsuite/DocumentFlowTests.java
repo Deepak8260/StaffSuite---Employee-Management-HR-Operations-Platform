@@ -69,6 +69,8 @@ class DocumentFlowTests {
     }
 
     static final byte[] PDF = "%PDF-1.4 fake pdf content".getBytes(StandardCharsets.UTF_8);
+    static final byte[] PNG = { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0 };
+    static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0x10, 'J', 'F', 'I', 'F' };
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -257,6 +259,10 @@ class DocumentFlowTests {
         String t = bearer("a@test.com");
         upload(t, empA, idProof, "notes.pdf", "plain text pretending to be a pdf".getBytes(StandardCharsets.UTF_8), null, null)
                 .andExpect(status().isBadRequest());                                            // decided by content, not the name
+        // only PDFs: real PNG / JPEG content is refused even when named and typed as a PDF
+        MvcResult png = upload(t, empA, idProof, "scan.pdf", PNG, null, null).andExpect(status().isBadRequest()).andReturn();
+        assertThat(png.getResponse().getContentAsString()).contains("Only PDF files are allowed");
+        upload(t, empA, idProof, "photo.pdf", JPEG, null, null).andExpect(status().isBadRequest());
         upload(t, empA, idProof, "empty.pdf", new byte[0], null, null).andExpect(status().isBadRequest());
         upload(t, empA, idProof, "missing.pdf", null, null, null).andExpect(status().isBadRequest());
         upload(t, empA, idProof, "far.pdf", PDF, "2999-01-01", null).andExpect(status().isBadRequest());
@@ -436,6 +442,98 @@ class DocumentFlowTests {
         java.util.List<String> out = new java.util.ArrayList<>();
         docs.forEach(d -> out.add(d.get("fileName").asString()));
         return out;
+    }
+
+    // --------------------------------------------------------- upload time + view
+
+    @Test
+    void uploadTimeIsSetByTheServerStoredPermanentlyAndReturned() throws Exception {
+        java.time.Instant before = java.time.Instant.now();
+        MvcResult res = upload(bearer("a@test.com"), empA, idProof, "dated.pdf", PDF, null, null)
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.uploadedAt").exists()).andReturn();
+        java.time.Instant after = java.time.Instant.now();
+
+        java.time.Instant reported = java.time.Instant.parse(
+                json.readTree(res.getResponse().getContentAsString()).get("uploadedAt").asString());
+        assertThat(reported).isBetween(before.minusSeconds(1), after.plusSeconds(1));   // the server's clock, "now"
+
+        EmployeeDocument row = documents.findAll().get(0);
+        assertThat(row.getUploadedAt()).isNotNull().isBetween(before.minusSeconds(1), after.plusSeconds(1));
+
+        // it is part of the listing too, and stays exactly the same on every read
+        JsonNode first = list(bearer("a@test.com"), empA).get(0);
+        Thread.sleep(50);
+        JsonNode second = list(bearer("hr@test.com"), empA).get(0);
+        assertThat(first.get("uploadedAt").asString()).isEqualTo(second.get("uploadedAt").asString());
+        assertThat(java.time.Instant.parse(first.get("uploadedAt").asString())).isEqualTo(row.getUploadedAt());
+        // what the upload call returned is character-for-character what every later read returns
+        String atUpload = json.readTree(res.getResponse().getContentAsString()).get("uploadedAt").asString();
+        assertThat(atUpload).isEqualTo(first.get("uploadedAt").asString()).isEqualTo(second.get("uploadedAt").asString());
+        assertThat(row.getUploadedAt().getNano() % 1_000_000).isZero();   // millisecond precision
+
+        // an "uploadedAt" sent by the client is simply ignored
+        MockMultipartHttpServletRequestBuilder forged = multipart("/api/v1/employees/" + empA.getId() + "/documents");
+        forged.file(new MockMultipartFile("file", "forged.pdf", "application/pdf", PDF));
+        forged.param("categoryId", String.valueOf(idProof.getId())).param("uploadedAt", "2001-01-01T00:00:00Z");
+        MvcResult forgedRes = mvc.perform(forged.header("Authorization", bearer("a@test.com")))
+                .andExpect(status().isCreated()).andReturn();
+        assertThat(json.readTree(forgedRes.getResponse().getContentAsString()).get("uploadedAt").asString())
+                .doesNotStartWith("2001");
+    }
+
+    @Test
+    void pdfsCanBeViewedInlineUnderTheSameAccessRulesAsDownloads() throws Exception {
+        long visible = uploaded(bearer("a@test.com"), empA, "viewable.pdf", null, null);
+        long hrOnly = uploaded(bearer("hr@test.com"), empA, "secret.pdf", null, "HR_ONLY");
+        String employee = bearer("a@test.com");
+        String manager = bearer("mgr@test.com");
+        String hr = bearer("hr@test.com");
+
+        for (String who : new String[] { employee, manager, hr, bearer("admin@test.com") }) {
+            MvcResult res = mvc.perform(get("/api/v1/documents/" + visible + "/view").header("Authorization", who))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type", "application/pdf"))
+                    .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                    .andReturn();
+            assertThat(res.getResponse().getContentAsByteArray()).isEqualTo(PDF);
+            assertThat(res.getResponse().getHeader("Content-Disposition")).startsWith("inline");   // shown, not saved
+        }
+
+        // anyone not allowed to see the document gets "not found", exactly as for downloads
+        send("GET", "/api/v1/documents/" + visible + "/view", bearer("b@test.com"), null).andExpect(status().isNotFound());
+        for (String who : new String[] { employee, manager, bearer("b@test.com") }) {
+            send("GET", "/api/v1/documents/" + hrOnly + "/view", who, null).andExpect(status().isNotFound());
+        }
+        mvc.perform(get("/api/v1/documents/" + hrOnly + "/view").header("Authorization", hr)).andExpect(status().isOk());
+        send("GET", "/api/v1/documents/99999/view", hr, null).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/documents/" + visible + "/view")).andExpect(status().isUnauthorized());
+
+        // the download still saves it as an attachment, and the two are audited separately
+        mvc.perform(get("/api/v1/documents/" + visible + "/download").header("Authorization", employee))
+                .andExpect(status().isOk());
+        MvcResult dl = mvc.perform(get("/api/v1/documents/" + visible + "/download").header("Authorization", employee)).andReturn();
+        assertThat(dl.getResponse().getHeader("Content-Disposition")).startsWith("attachment");
+        assertThat(audits.findAll()).anyMatch(a -> "DOCUMENT_VIEWED".equals(a.getAction()))
+                .anyMatch(a -> "DOCUMENT_DOWNLOADED".equals(a.getAction()));
+    }
+
+    @Test
+    void onlyPdfDocumentsCanBeViewedInTheApp() throws Exception {
+        // an image uploaded before documents became PDF-only: still downloadable, but not shown inline
+        EmployeeDocument legacy = new EmployeeDocument();
+        legacy.setEmployee(empA);
+        legacy.setCategory(idProof);
+        legacy.setFileName("old-scan.png");
+        legacy.setFileUrl("employee-documents/" + empA.getId() + "/legacy.png");
+        legacy.setContentType("image/png");
+        legacy.setVisibility(DocumentVisibility.SELF_AND_HR);
+        legacy = documents.save(legacy);
+        storage.files.put(legacy.getFileUrl(), PNG);
+
+        send("GET", "/api/v1/documents/" + legacy.getId() + "/view", bearer("a@test.com"), null)
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/documents/" + legacy.getId() + "/download").header("Authorization", bearer("a@test.com")))
+                .andExpect(status().isOk());
     }
 
     // -------------------------------------------------------------- categories

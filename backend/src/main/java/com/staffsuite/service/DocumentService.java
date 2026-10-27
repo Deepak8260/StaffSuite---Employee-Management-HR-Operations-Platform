@@ -3,6 +3,7 @@ package com.staffsuite.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -107,8 +108,9 @@ public class DocumentService {
         String extension;
         String reference;
         try {
-            extension = FileTypes.detectExtension(file)
-                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Only PDF, PNG and JPEG files are allowed"));
+            // Only PDFs: decided from the file's own bytes, not its name or the type the client claims.
+            extension = FileTypes.detectExtension(file).filter("pdf"::equals)
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Only PDF files are allowed"));
             try (InputStream in = file.getInputStream()) {
                 reference = storage.store(DIR + "/" + employeeId, UUID.randomUUID() + "." + extension, in);
             }
@@ -124,6 +126,9 @@ public class DocumentService {
         document.setContentType(FileTypes.contentTypeOf(extension));
         document.setFileSize(file.getSize());
         document.setUploadedBy(actor.userId());
+        // Server time; the client cannot influence it. Cut to milliseconds, the precision the database
+        // keeps, so the value returned now is exactly the value stored and returned on every later read.
+        document.setUploadedAt(Instant.now(clock).truncatedTo(ChronoUnit.MILLIS));
         document.setExpiryDate(expiryDate);
         document.setVisibility(visibility);
         try {
@@ -157,6 +162,27 @@ public class DocumentService {
 
     @Transactional
     public DocumentDownload download(AuthenticatedUser actor, Long id, String ip) {
+        DocumentDownload file = open(actor, id);
+        auditService.log(actor.userId(), "DOCUMENT_DOWNLOADED", ENTITY, id, ip);
+        return file;
+    }
+
+    /**
+     * For showing a PDF inside the application without saving it. Exactly the same access rules as
+     * {@link #download}; the difference is only how the response is presented, and the audit entry.
+     */
+    @Transactional
+    public DocumentDownload view(AuthenticatedUser actor, Long id, String ip) {
+        DocumentDownload file = open(actor, id);
+        if (!"application/pdf".equals(file.contentType())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Only PDF documents can be viewed here");
+        }
+        auditService.log(actor.userId(), "DOCUMENT_VIEWED", ENTITY, id, ip);
+        return file;
+    }
+
+    /** The single place that decides whether the caller may read a document's file. */
+    private DocumentDownload open(AuthenticatedUser actor, Long id) {
         // Missing and not-allowed look the same, so guessing ids reveals nothing.
         EmployeeDocument document = documentRepository.findWithDetailsById(id).filter(d -> canSee(actor, d))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Document not found"));
@@ -166,7 +192,6 @@ public class DocumentService {
         } catch (StorageException e) {
             throw new ApiException(HttpStatus.NOT_FOUND, "The file for this document is missing");
         }
-        auditService.log(actor.userId(), "DOCUMENT_DOWNLOADED", ENTITY, id, ip);
         return new DocumentDownload(resource, document.getContentType(), document.getFileName());
     }
 
@@ -277,7 +302,8 @@ public class DocumentService {
                     e.getDepartment() == null ? null : e.getDepartment().getName(), d.getCategory().getId(),
                     d.getCategory().getName(), d.getFileName(), d.getContentType(), d.getFileSize(), d.getExpiryDate(),
                     remaining, remaining != null && remaining < 0, d.getVisibility(),
-                    d.getUploadedBy() == null ? null : uploaders.get(d.getUploadedBy()), d.getCreatedAt());
+                    d.getUploadedBy() == null ? null : uploaders.get(d.getUploadedBy()), d.getUploadedAt(),
+                    d.getCreatedAt());
         }).toList();
     }
 

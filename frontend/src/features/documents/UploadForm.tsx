@@ -1,9 +1,17 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { uploadDocument } from '../../api/documents'
+import PdfViewerModal from '../../components/PdfViewerModal'
 import type { DocumentCategory, DocumentVisibility } from '../../types/documents'
+import { formatBytes } from '../../utils/format'
 
 const MAX_BYTES = 5 * 1024 * 1024
+
+/** Checks the file's own first bytes, so a renamed image or text file is caught before it is sent. */
+async function looksLikePdf(file: File): Promise<boolean> {
+  const head = await file.slice(0, 5).text()
+  return head.startsWith('%PDF')
+}
 
 interface Props {
   employeeId: number
@@ -22,15 +30,47 @@ export default function UploadForm({ employeeId, categories, allowVisibility, on
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Preview: an in-memory URL for the chosen file. Nothing is sent to the server by previewing.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  function chooseFile(f: File | null) {
+  // never leave a preview URL behind
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
+
+  function rejectFile(message: string) {
+    setError(message)
+    setFile(null)
+    setFileKey((k) => k + 1)
+  }
+
+  async function chooseFile(f: File | null) {
     setError(null)
-    if (f && f.size > MAX_BYTES) {
-      setError('The file is too large (maximum 5 MB).')
-      setFileKey((k) => k + 1)
+    setNotice(null)
+    if (!f) {
+      setFile(null)
+      return
+    }
+    if (!f.name.toLowerCase().endsWith('.pdf')) {
+      rejectFile('Only PDF files are allowed.')
+      return
+    }
+    if (f.size > MAX_BYTES) {
+      rejectFile('The file is too large (maximum 5 MB).')
+      return
+    }
+    if (!(await looksLikePdf(f))) {
+      rejectFile('This file is not a valid PDF.')
       return
     }
     setFile(f)
+  }
+
+  function openPreview() {
+    if (!file) return
+    setPreviewUrl(URL.createObjectURL(file))
+  }
+
+  function closePreview() {
+    setPreviewUrl(null)   // the effect above revokes the URL
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -66,10 +106,16 @@ export default function UploadForm({ employeeId, categories, allowVisibility, on
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </label>
-      <label>File (PDF, PNG or JPG, max 5 MB)
-        <input key={fileKey} type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
-          onChange={(e) => chooseFile(e.target.files?.[0] ?? null)} required />
+      <label>File (PDF only, max 5 MB)
+        <input key={fileKey} type="file" accept=".pdf,application/pdf"
+          onChange={(e) => void chooseFile(e.target.files?.[0] ?? null)} required />
       </label>
+      {file && (
+        <div className="file-chosen">
+          <span>{file.name} <span className="hint">({formatBytes(file.size)})</span></span>
+          <button type="button" onClick={openPreview}>View PDF</button>
+        </div>
+      )}
       <label>Expiry date (optional)
         <input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
       </label>
@@ -85,6 +131,15 @@ export default function UploadForm({ employeeId, categories, allowVisibility, on
       {error && <p className="error">{error}</p>}
       {notice && <p className="success">{notice}</p>}
       <button type="submit" disabled={busy || !file || !categoryId}>{busy ? 'Uploading…' : 'Upload'}</button>
+
+      {previewUrl && file && (
+        <PdfViewerModal
+          title={`Preview: ${file.name}`}
+          details="Not uploaded yet. Check the document, close this window, then click Upload."
+          url={previewUrl}
+          onClose={closePreview}
+        />
+      )}
     </form>
   )
 }

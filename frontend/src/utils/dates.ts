@@ -50,6 +50,19 @@ export function formatDateOnly(iso: string | null | undefined): string {
   return iso ? fromISO(iso.slice(0, 10)).toLocaleDateString() : '—'
 }
 
+/** An instant from the server (UTC, e.g. "2026-10-27T13:12:07.123Z") shown in the viewer's local time, with seconds. */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
 export function monthLabel(year: number, month: number): string {
   return new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 }
