@@ -120,3 +120,48 @@ textarea { padding: 0.5rem; font-size: 1rem; font-family: inherit; }
   .page { padding: 0; }
   .holiday-table tr.upcoming td { background: none; }
 }
+
+/* attendance */
+.badge.present { background: #d3f4e1; color: #067647; }
+.badge.late { background: #fff3c4; color: #8d6a00; }
+.badge.half_day { background: #ffe3cc; color: #a24400; }
+.badge.absent { background: #fde3e1; color: #b42318; }
+.badge.on_leave { background: #dbeafe; color: #1d4ed8; }
+.today-card { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; padding: 1.25rem 1.5rem; margin: 1rem 0 1.5rem; border: 1px solid #b6d4fa; border-radius: 8px; background: #eaf3ff; }
+.today-date { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
+.today-status { color: #3e4c59; }
+.today-card .actions button { padding: 0.7rem 1.4rem; font-size: 1rem; }
+.summary-table tfoot th { background: #f0f2f5; }
+.summary-table .bad { color: #b42318; font-weight: 600; }
+.wide-modal { max-width: 720px; width: 92vw; }
+.modal-scroll { max-height: 55vh; overflow: auto; margin-bottom: 1rem; }
+
+/* table action cells: keep them real table cells (display:flex broke row borders and alignment) */
+td.actions { display: table-cell; white-space: nowrap; }
+td.actions > * { margin-right: 0.5rem; }
+td.actions > *:last-child { margin-right: 0; }
+
+/* attendance calendar + day detail */
+.att-layout { display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 1.5rem; }
+.att-layout .cal { flex: 2 1 560px; max-width: 860px; }
+.day-detail { flex: 1 1 240px; max-width: 320px; padding: 1rem 1.25rem; border: 1px solid #e4e7eb; border-radius: 8px; background: #f8fafc; }
+.day-detail h3 { margin: 0 0 0.5rem; }
+.details.one-col { grid-template-columns: 1fr; gap: 0.5rem; margin: 0.75rem 0; }
+button.cal-day { font: inherit; cursor: pointer; }
+.cal-day.chosen { outline: 2px solid #1f2933; outline-offset: -2px; }
+.cal-day.att-present { background: #d3f4e1; border-color: #9bd9b6; }
+.cal-day.att-late { background: #fff3c4; border-color: #ecd27a; }
+.cal-day.att-half_day { background: #ffe3cc; border-color: #f0b98c; }
+.cal-day.att-absent { background: #fde3e1; border-color: #f0a8a2; }
+.cal-day.att-on_leave { background: #dbeafe; border-color: #9cc0f4; }
+.att-label { font-size: 0.72rem; font-weight: 700; }
+.att-time { font-size: 0.68rem; color: #3e4c59; white-space: nowrap; }
+.key.att-present { background: #d3f4e1; }
+.key.att-late { background: #fff3c4; }
+.key.att-half_day { background: #ffe3cc; }
+.key.att-absent { background: #fde3e1; }
+.key.att-on_leave { background: #dbeafe; }
+.segmented { display: inline-flex; border: 1px solid #cbd2d9; border-radius: 6px; overflow: hidden; }
+.segmented button { border: 0; border-radius: 0; background: #fff; }
+.segmented button.on { background: #1f2933; color: #fff; }
+.filters.lookup select { min-width: 22rem; }

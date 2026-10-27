@@ -170,8 +170,8 @@ CREATE TABLE attendance_records (
     attendance_date DATE         NOT NULL,
     check_in_time   DATETIME     NULL,
     check_out_time  DATETIME     NULL,
-    work_hours      DECIMAL(5,2) NULL,
-    status          ENUM('PRESENT','ABSENT','HALF_DAY','ON_LEAVE','HOLIDAY','WEEKEND') NOT NULL DEFAULT 'PRESENT',
+    working_hours   DECIMAL(5,2) NULL,
+    status          ENUM('PRESENT','ABSENT','HALF_DAY','LATE','ON_LEAVE') NOT NULL DEFAULT 'PRESENT',
     notes           VARCHAR(500) NULL,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -183,7 +183,7 @@ CREATE TABLE attendance_records (
 CREATE TABLE attendance_corrections (
     id                   BIGINT        NOT NULL AUTO_INCREMENT,
     attendance_record_id BIGINT        NOT NULL,
-    employee_id          BIGINT        NOT NULL,
+    requested_by         BIGINT        NOT NULL,  -- the employee asking for the correction
     requested_check_in   DATETIME      NULL,
     requested_check_out  DATETIME      NULL,
     reason               VARCHAR(1000) NOT NULL,
@@ -196,7 +196,7 @@ CREATE TABLE attendance_corrections (
     PRIMARY KEY (id),
     INDEX idx_attendance_corrections_status (status),
     CONSTRAINT fk_attendance_corrections_record   FOREIGN KEY (attendance_record_id) REFERENCES attendance_records (id),
-    CONSTRAINT fk_attendance_corrections_employee FOREIGN KEY (employee_id)          REFERENCES employees (id),
+    CONSTRAINT fk_attendance_corrections_employee FOREIGN KEY (requested_by)         REFERENCES employees (id),
     CONSTRAINT fk_attendance_corrections_reviewer FOREIGN KEY (reviewed_by)          REFERENCES employees (id)
 ) ENGINE=InnoDB;
 

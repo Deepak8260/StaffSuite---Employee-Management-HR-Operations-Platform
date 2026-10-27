@@ -52,6 +52,12 @@ export default function Layout() {
           <Link to="/org-chart">Org Chart</Link>
           {canListEmployees(role) && <Link to="/employees">{canManage ? 'Employees' : 'My Team'}</Link>}
 
+          <NavMenu label="Attendance">
+            {user?.employeeId != null && <Link to="/attendance">My Attendance</Link>}
+            {role === 'MANAGER' && <Link to="/attendance/team">Team Attendance</Link>}
+            {canManage && <Link to="/attendance/reports">Attendance Reports</Link>}
+          </NavMenu>
+
           <NavMenu label="Leave">
             {user?.employeeId != null && <Link to="/leave">My Leave</Link>}
             <Link to="/holidays">Holiday Calendar</Link>

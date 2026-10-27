@@ -31,3 +31,8 @@ staffsuite:
     admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
   password-reset:
     expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
+  attendance:
+    late-cutoff: "${ATTENDANCE_LATE_CUTOFF:09:30}"
+    half-day-hours: "${ATTENDANCE_HALF_DAY_HOURS:4}"
+    timezone: "${ATTENDANCE_TIMEZONE:Asia/Kolkata}"
+    correction-window-days: "${ATTENDANCE_CORRECTION_WINDOW_DAYS:30}"

@@ -5,6 +5,10 @@ import ChangePasswordPage from '../features/auth/ChangePasswordPage'
 import ForgotPasswordPage from '../features/auth/ForgotPasswordPage'
 import LoginPage from '../features/auth/LoginPage'
 import ResetPasswordPage from '../features/auth/ResetPasswordPage'
+import AttendanceReportsPage from '../features/attendance/AttendanceReportsPage'
+import EmployeeAttendanceDetailPage from '../features/attendance/EmployeeAttendanceDetailPage'
+import MyAttendancePage from '../features/attendance/MyAttendancePage'
+import TeamAttendancePage from '../features/attendance/TeamAttendancePage'
 import DirectoryPage from '../features/employees/DirectoryPage'
 import EmployeeDetailPage from '../features/employees/EmployeeDetailPage'
 import EmployeeFormPage from '../features/employees/EmployeeFormPage'
@@ -42,6 +46,31 @@ export default function AppRoutes() {
         <Route path="/my-profile" element={<MyProfilePage />} />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route path="/attendance" element={<MyAttendancePage />} />
+        <Route
+          path="/attendance/team"
+          element={
+            <ProtectedRoute roles={['MANAGER']}>
+              <TeamAttendancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance/reports/employee/:id"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <EmployeeAttendanceDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance/reports"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <AttendanceReportsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/leave" element={<MyLeavePage />} />
         <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
         <Route path="/holidays" element={<HolidayCalendarPage />} />

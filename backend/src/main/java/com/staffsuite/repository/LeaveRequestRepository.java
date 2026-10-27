@@ -41,6 +41,12 @@ public interface LeaveRequestRepository
             @Param("status") LeaveStatus status, @Param("yearStart") LocalDate yearStart,
             @Param("yearEnd") LocalDate yearEnd);
 
+    /** Leave in the given status for any of the employees that touches [from, to]. */
+    @Query("select r from LeaveRequest r join fetch r.leaveType where r.employee.id in :employeeIds "
+            + "and r.status = :status and r.startDate <= :to and r.endDate >= :from")
+    java.util.List<LeaveRequest> findOverlapping(@Param("employeeIds") Collection<Long> employeeIds,
+            @Param("status") LeaveStatus status, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
     @Override
     @EntityGraph(attributePaths = { "employee", "leaveType", "approver" })
     Page<LeaveRequest> findAll(Specification<LeaveRequest> spec, Pageable pageable);
