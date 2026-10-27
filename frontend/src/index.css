@@ -86,3 +86,37 @@ textarea { padding: 0.5rem; font-size: 1rem; font-family: inherit; }
 .key.holiday { background: #fde3e1; }
 .key.optional { background: #fff3c4; }
 .key.range { background: #cde4ff; }
+
+/* holiday calendar */
+.holiday-page { max-width: 1000px; }
+.holiday-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.25rem 0 1.5rem; }
+.stat { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.9rem 1.25rem; border: 1px solid #e4e7eb; border-radius: 6px; background: #f8fafc; min-width: 8.5rem; }
+.stat-number { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 0.8rem; color: #52606d; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat.next { background: #eaf3ff; border-color: #b6d4fa; flex: 1 1 260px; }
+.stat-title { font-size: 1.2rem; font-weight: 700; }
+.stat-sub { color: #3e4c59; font-size: 0.9rem; }
+.holiday-table { border: 1px solid #e4e7eb; border-radius: 6px; overflow: hidden; }
+.holiday-table thead th { background: #1f2933; color: #fff; font-size: 0.85rem; font-weight: 600; }
+.holiday-table tbody + tbody { border-top: 1px solid #e4e7eb; }
+.holiday-table .month-row th { background: #f0f2f5; color: #1f2933; font-size: 0.95rem; padding: 0.55rem 0.75rem; }
+.month-count { margin-left: 0.6rem; font-weight: 400; font-size: 0.8rem; color: #52606d; }
+.holiday-table td { vertical-align: top; padding: 0.6rem 0.75rem; }
+.col-date { width: 6.5rem; font-weight: 600; white-space: nowrap; }
+.col-day { width: 11rem; }
+.col-type { width: 9.5rem; }
+.holiday-table tr.past td { color: #9aa5b1; }
+.holiday-table tr.past .hint { color: #b8c0c9; }
+.holiday-table tr.upcoming td { background: #eaf3ff; }
+.tag { margin-left: 0.5rem; font-size: 0.7rem; padding: 0.05rem 0.4rem; border-radius: 3px; background: #e4e7eb; color: #52606d; }
+.type-pill { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.type-pill.public { background: #fde3e1; color: #b42318; }
+.type-pill.optional { background: #fff3c4; color: #8d6a00; }
+.note { margin-top: 1rem; }
+.print-only { display: none; }
+@media print {
+  .topbar, .no-print { display: none !important; }
+  .print-only { display: block; }
+  .page { padding: 0; }
+  .holiday-table tr.upcoming td { background: none; }
+}

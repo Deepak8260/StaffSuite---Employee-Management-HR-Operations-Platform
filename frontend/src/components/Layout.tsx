@@ -54,6 +54,7 @@ export default function Layout() {
 
           <NavMenu label="Leave">
             {user?.employeeId != null && <Link to="/leave">My Leave</Link>}
+            <Link to="/holidays">Holiday Calendar</Link>
             <Link to="/leave/calendar">Leave Calendar</Link>
             {role === 'MANAGER' && <Link to="/leave/team">Team Leave</Link>}
             {canManage && <Link to="/leave/all">All Leave</Link>}

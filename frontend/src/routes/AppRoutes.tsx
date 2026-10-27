@@ -11,6 +11,7 @@ import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
+import HolidayCalendarPage from '../features/leave/HolidayCalendarPage'
 import HolidaysPage from '../features/leave/HolidaysPage'
 import LeaveApprovalsPage from '../features/leave/LeaveApprovalsPage'
 import LeaveCalendarPage from '../features/leave/LeaveCalendarPage'
@@ -43,6 +44,7 @@ export default function AppRoutes() {
         <Route path="/org-chart" element={<OrgChartPage />} />
         <Route path="/leave" element={<MyLeavePage />} />
         <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
+        <Route path="/holidays" element={<HolidayCalendarPage />} />
         <Route
           path="/leave/team"
           element={
