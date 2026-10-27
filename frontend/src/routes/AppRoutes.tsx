@@ -11,6 +11,11 @@ import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
+import HolidaysPage from '../features/leave/HolidaysPage'
+import LeaveApprovalsPage from '../features/leave/LeaveApprovalsPage'
+import LeaveCalendarPage from '../features/leave/LeaveCalendarPage'
+import LeaveTypesPage from '../features/leave/LeaveTypesPage'
+import MyLeavePage from '../features/leave/MyLeavePage'
 import DepartmentsPage from '../features/organization/DepartmentsPage'
 import DesignationsPage from '../features/organization/DesignationsPage'
 import OrgChartPage from '../features/organization/OrgChartPage'
@@ -36,6 +41,40 @@ export default function AppRoutes() {
         <Route path="/my-profile" element={<MyProfilePage />} />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route path="/leave" element={<MyLeavePage />} />
+        <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
+        <Route
+          path="/leave/team"
+          element={
+            <ProtectedRoute roles={['MANAGER']}>
+              <LeaveApprovalsPage scope="TEAM" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leave/all"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <LeaveApprovalsPage scope="ALL" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/leave-types"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <LeaveTypesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/holidays"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <HolidaysPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/departments"
           element={

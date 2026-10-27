@@ -1,4 +1,5 @@
 import type { Role } from '../types/auth'
+import { formatDateOnly } from './dates'
 
 /** Mirrors the backend: only these roles can create, edit and offboard employees. */
 export function canManageEmployees(role: Role | undefined): boolean {
@@ -18,5 +19,5 @@ export function grantableRoles(role: Role | undefined): Role[] {
 }
 
 export function formatDate(value: string | null | undefined): string {
-  return value ? new Date(value).toLocaleDateString() : '—'
+  return formatDateOnly(value)
 }

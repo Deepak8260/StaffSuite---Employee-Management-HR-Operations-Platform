@@ -54,6 +54,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/departments", "/api/v1/designations").hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/departments/{id}", "/api/v1/designations/{id}").hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/{id}").hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/leave-types", "/api/v1/public-holidays",
+                        "/api/v1/leave-balances/initialize").hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/leave-types/{id}", "/api/v1/public-holidays/{id}")
+                        .hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/public-holidays/{id}").hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/leave-requests/{id}/approve", "/api/v1/leave-requests/{id}/reject")
+                        .hasAnyRole("SYSTEM_ADMIN", "HR_ADMIN", "MANAGER")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

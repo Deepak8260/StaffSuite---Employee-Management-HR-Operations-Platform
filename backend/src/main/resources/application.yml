@@ -5,6 +5,10 @@ spring:
     name: staffsuite-backend
   profiles:
     default: dev
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   jpa:
     open-in-view: false
     hibernate:

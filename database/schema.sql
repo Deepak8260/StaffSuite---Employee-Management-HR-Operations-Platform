@@ -94,32 +94,32 @@ ALTER TABLE users
 
 CREATE TABLE leave_types (
     id                  BIGINT       NOT NULL AUTO_INCREMENT,
-    name                VARCHAR(80)  NOT NULL,
-    code                VARCHAR(20)  NOT NULL,
-    description         VARCHAR(500) NULL,
-    default_annual_days DECIMAL(5,2) NOT NULL DEFAULT 0,
-    is_paid             BOOLEAN      NOT NULL DEFAULT TRUE,
-    is_carry_forward    BOOLEAN      NOT NULL DEFAULT FALSE,
-    is_active           BOOLEAN      NOT NULL DEFAULT TRUE,
+    name                    VARCHAR(80)  NOT NULL,
+    description             VARCHAR(500) NULL,
+    annual_entitlement_days DECIMAL(5,2) NOT NULL DEFAULT 0,
+    carry_forward_allowed   BOOLEAN      NOT NULL DEFAULT FALSE,
+    max_carry_forward_days  DECIMAL(5,2) NOT NULL DEFAULT 0,
+    is_active               BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_leave_types_name UNIQUE (name)
+) ENGINE=InnoDB;
+
+-- allocated_days = annual entitlement + carried_forward_days; remaining_days = allocated_days - used_days
+CREATE TABLE leave_balances (
+    id                  BIGINT       NOT NULL AUTO_INCREMENT,
+    employee_id         BIGINT       NOT NULL,
+    leave_type_id       BIGINT       NOT NULL,
+    balance_year        SMALLINT     NOT NULL,
+    allocated_days      DECIMAL(5,2) NOT NULL DEFAULT 0,
+    used_days           DECIMAL(5,2) NOT NULL DEFAULT 0,
+    carried_forward_days DECIMAL(5,2) NOT NULL DEFAULT 0,
+    remaining_days      DECIMAL(5,2) NOT NULL DEFAULT 0,
     created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT uq_leave_types_name UNIQUE (name),
-    CONSTRAINT uq_leave_types_code UNIQUE (code)
-) ENGINE=InnoDB;
-
-CREATE TABLE leave_balances (
-    id              BIGINT       NOT NULL AUTO_INCREMENT,
-    employee_id     BIGINT       NOT NULL,
-    leave_type_id   BIGINT       NOT NULL,
-    year            SMALLINT     NOT NULL,
-    allocated       DECIMAL(5,2) NOT NULL DEFAULT 0,
-    used            DECIMAL(5,2) NOT NULL DEFAULT 0,
-    carried_forward DECIMAL(5,2) NOT NULL DEFAULT 0,
-    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT uq_leave_balances_emp_type_year UNIQUE (employee_id, leave_type_id, year),
+    CONSTRAINT uq_leave_balances_emp_type_year UNIQUE (employee_id, leave_type_id, balance_year),
     CONSTRAINT fk_leave_balances_employee   FOREIGN KEY (employee_id)   REFERENCES employees (id),
     CONSTRAINT fk_leave_balances_leave_type FOREIGN KEY (leave_type_id) REFERENCES leave_types (id)
 ) ENGINE=InnoDB;
@@ -133,9 +133,10 @@ CREATE TABLE leave_requests (
     total_days     DECIMAL(5,2)  NOT NULL,
     reason         VARCHAR(1000) NULL,
     status         ENUM('PENDING','APPROVED','REJECTED','CANCELLED') NOT NULL DEFAULT 'PENDING',
-    reviewed_by    BIGINT        NULL,
-    reviewed_at    TIMESTAMP     NULL,
-    review_comment VARCHAR(1000) NULL,
+    approver_id      BIGINT        NULL,  -- employee who approved/rejected (NULL if the approver has no employee record)
+    reviewed_at      TIMESTAMP     NULL,
+    approver_comment VARCHAR(1000) NULL,
+    attachment_url   VARCHAR(500)  NULL,  -- relative path under FILE_STORAGE_PATH
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -143,7 +144,7 @@ CREATE TABLE leave_requests (
     INDEX idx_leave_requests_dates (start_date, end_date),
     CONSTRAINT fk_leave_requests_employee   FOREIGN KEY (employee_id)   REFERENCES employees (id),
     CONSTRAINT fk_leave_requests_leave_type FOREIGN KEY (leave_type_id) REFERENCES leave_types (id),
-    CONSTRAINT fk_leave_requests_reviewer   FOREIGN KEY (reviewed_by)   REFERENCES employees (id),
+    CONSTRAINT fk_leave_requests_reviewer   FOREIGN KEY (approver_id)   REFERENCES employees (id),
     CONSTRAINT chk_leave_requests_dates CHECK (end_date >= start_date)
 ) ENGINE=InnoDB;
 

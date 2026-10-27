@@ -57,6 +57,7 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final EmployeeMapper mapper;
+    private final LeaveBalanceService leaveBalanceService;
 
     // ------------------------------------------------------------------ queries
 
@@ -167,6 +168,8 @@ public class EmployeeService {
             userRepository.save(user);
             auditService.log(actor.userId(), "USER_CREATED", "USER", user.getId(), ip);
         }
+        // Give the new joiner their leave balances for the current year (no-op until leave types exist).
+        leaveBalanceService.initializeForEmployee(employee.getId(), LocalDate.now().getYear());
         auditService.log(actor.userId(), "EMPLOYEE_CREATED", ENTITY, employee.getId(), ip);
         return mapper.toResponse(employee);
     }
