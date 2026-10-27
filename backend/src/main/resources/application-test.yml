@@ -1,0 +1,21 @@
+# Self-contained profile for automated tests (in-memory H2, no env vars needed).
+spring:
+  datasource:
+    url: jdbc:h2:mem:staffsuite;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+server:
+  port: 0
+
+staffsuite:
+  cors:
+    allowed-origins: http://localhost:5173
+  jwt:
+    secret: test-secret-test-secret-test-secret-0123456789
+    expiry-ms: 3600000
+  storage:
+    path: ./target/test-uploads

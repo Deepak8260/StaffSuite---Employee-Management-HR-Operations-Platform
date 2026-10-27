@@ -1,0 +1,29 @@
+# All environment-specific values are resolved from environment variables
+# at startup. Nothing here is baked into the build. See ../.env.example.
+spring:
+  application:
+    name: staffsuite-backend
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+
+server:
+  port: ${SERVER_PORT}
+
+staffsuite:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  jwt:
+    secret: ${JWT_SECRET}
+    expiry-ms: ${JWT_EXPIRY_MS}
+  storage:
+    path: ${FILE_STORAGE_PATH}
+  # Optional: creates the first SYSTEM_ADMIN on startup when the users table is empty.
+  bootstrap:
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  password-reset:
+    expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
