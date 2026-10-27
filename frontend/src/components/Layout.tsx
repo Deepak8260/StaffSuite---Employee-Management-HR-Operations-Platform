@@ -70,12 +70,16 @@ export default function Layout() {
             <NavMenu label="Admin">
               <Link to="/admin/departments">Departments</Link>
               <Link to="/admin/designations">Designations</Link>
+              <Link to="/admin/documents">Employee Documents</Link>
+              <Link to="/admin/documents/expiring">Expiring Documents</Link>
+              <Link to="/admin/document-categories">Document Categories</Link>
               <Link to="/admin/leave-types">Leave Types</Link>
               <Link to="/admin/holidays">Public Holidays</Link>
               {role === 'SYSTEM_ADMIN' && <Link to="/admin/users">User Management</Link>}
             </NavMenu>
           )}
 
+          {user?.employeeId != null && <Link to="/documents">My Documents</Link>}
           {user?.employeeId != null && <Link to="/my-profile">My Profile</Link>}
           <Link to="/change-password">Change password</Link>
         </nav>

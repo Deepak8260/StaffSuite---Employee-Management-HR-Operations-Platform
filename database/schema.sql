@@ -219,15 +219,18 @@ CREATE TABLE employee_documents (
     id           BIGINT       NOT NULL AUTO_INCREMENT,
     employee_id  BIGINT       NOT NULL,
     category_id  BIGINT       NOT NULL,
-    file_name    VARCHAR(255) NOT NULL,
-    stored_path  VARCHAR(500) NOT NULL,
+    file_name    VARCHAR(255) NOT NULL,  -- original name, for display and download only
+    file_url     VARCHAR(500) NOT NULL,  -- reference into the storage service; the file itself is never in MySQL
     content_type VARCHAR(100) NULL,
     file_size    BIGINT       NULL,
-    uploaded_by  BIGINT       NULL,
+    uploaded_by  BIGINT       NULL,      -- users.id of the uploader
+    expiry_date  DATE         NULL,
+    visibility   ENUM('SELF_AND_HR','HR_ONLY') NOT NULL DEFAULT 'SELF_AND_HR',
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_employee_documents_employee (employee_id),
+    INDEX idx_employee_documents_expiry (expiry_date),
     CONSTRAINT fk_employee_documents_employee FOREIGN KEY (employee_id) REFERENCES employees (id),
     CONSTRAINT fk_employee_documents_category FOREIGN KEY (category_id) REFERENCES document_categories (id),
     CONSTRAINT fk_employee_documents_uploader FOREIGN KEY (uploaded_by) REFERENCES users (id)

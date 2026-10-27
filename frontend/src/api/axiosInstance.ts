@@ -3,9 +3,11 @@ import type { ApiError } from '../types/auth'
 import { getConfig } from '../utils/config'
 import { getToken } from '../utils/tokenStorage'
 
+// No default Content-Type on purpose: axios picks application/json for plain objects, and for FormData
+// (file uploads) it must be left unset so the browser adds the multipart boundary. Forcing JSON here
+// made axios turn uploads into JSON, which the backend rejects with 415 "Unsupported content type".
 export const api = axios.create({
   baseURL: getConfig().API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
 })
 
 let onUnauthorized: (() => void) | null = null

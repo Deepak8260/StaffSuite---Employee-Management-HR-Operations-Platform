@@ -1,4 +1,6 @@
 import { useAuth } from '../../hooks/useAuth'
+import { canManageEmployees } from '../../utils/roles'
+import ExpiringDocumentsWidget from '../documents/ExpiringDocumentsWidget'
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -11,6 +13,7 @@ export default function HomePage() {
           Signed in as <strong>{user.email}</strong> ({user.role})
         </p>
       )}
+      {canManageEmployees(user?.role) && <ExpiringDocumentsWidget />}
     </main>
   )
 }

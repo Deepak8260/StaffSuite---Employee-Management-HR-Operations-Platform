@@ -25,12 +25,15 @@ staffsuite:
     expiry-ms: ${JWT_EXPIRY_MS}
   storage:
     path: ${FILE_STORAGE_PATH}
+    type: "${STORAGE_TYPE:local}"
   # Optional: creates the first SYSTEM_ADMIN on startup when the users table is empty.
   bootstrap:
     admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
   password-reset:
     expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
+  documents:
+    expiry-window-days: "${DOCUMENT_EXPIRY_WINDOW_DAYS:30}"
   attendance:
     late-cutoff: "${ATTENDANCE_LATE_CUTOFF:09:30}"
     half-day-hours: "${ATTENDANCE_HALF_DAY_HOURS:4}"

@@ -9,6 +9,10 @@ import AttendanceReportsPage from '../features/attendance/AttendanceReportsPage'
 import EmployeeAttendanceDetailPage from '../features/attendance/EmployeeAttendanceDetailPage'
 import MyAttendancePage from '../features/attendance/MyAttendancePage'
 import TeamAttendancePage from '../features/attendance/TeamAttendancePage'
+import DocumentCategoriesPage from '../features/documents/DocumentCategoriesPage'
+import EmployeeDocumentsPage from '../features/documents/EmployeeDocumentsPage'
+import ExpiringDocumentsPage from '../features/documents/ExpiringDocumentsPage'
+import MyDocumentsPage from '../features/documents/MyDocumentsPage'
 import DirectoryPage from '../features/employees/DirectoryPage'
 import EmployeeDetailPage from '../features/employees/EmployeeDetailPage'
 import EmployeeFormPage from '../features/employees/EmployeeFormPage'
@@ -46,6 +50,31 @@ export default function AppRoutes() {
         <Route path="/my-profile" element={<MyProfilePage />} />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route path="/documents" element={<MyDocumentsPage />} />
+        <Route
+          path="/admin/documents"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <EmployeeDocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/documents/expiring"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <ExpiringDocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/document-categories"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <DocumentCategoriesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/attendance" element={<MyAttendancePage />} />
         <Route
           path="/attendance/team"

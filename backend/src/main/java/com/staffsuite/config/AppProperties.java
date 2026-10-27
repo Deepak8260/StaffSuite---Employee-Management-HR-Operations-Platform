@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "staffsuite")
 public record AppProperties(Cors cors, Jwt jwt, Storage storage, Bootstrap bootstrap, PasswordReset passwordReset,
-        Attendance attendance) {
+        Attendance attendance, Documents documents) {
 
     public record Cors(List<String> allowedOrigins) {
     }
@@ -16,7 +16,8 @@ public record AppProperties(Cors cors, Jwt jwt, Storage storage, Bootstrap boots
     public record Jwt(String secret, long expiryMs) {
     }
 
-    public record Storage(String path) {
+    /** type "local" stores files under {@code path}; a future implementation can register another type. */
+    public record Storage(String path, String type) {
     }
 
     public record Bootstrap(String adminEmail, String adminPassword) {
@@ -32,5 +33,9 @@ public record AppProperties(Cors cors, Jwt jwt, Storage storage, Bootstrap boots
      * correctionWindowDays: how far back a correction may be requested.
      */
     public record Attendance(LocalTime lateCutoff, BigDecimal halfDayHours, String timezone, int correctionWindowDays) {
+    }
+
+    /** expiryWindowDays: default look-ahead for the "expiring documents" list. */
+    public record Documents(int expiryWindowDays) {
     }
 }
