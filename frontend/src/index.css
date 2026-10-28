@@ -234,3 +234,94 @@ tr.highlight td { background: #fff8d6; }
 .notice-box.error-box button { margin-top: 0.5rem; }
 .legend-item { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; margin-right: 0.75rem; }
 .legend { row-gap: 0.25rem; }
+
+/* ---------- reports dashboard & charts ----------
+   Colours are roles, not hex scattered around: light values here, dark values under the theme attribute
+   (the app has no dark theme yet, so the dark set is ready but not applied automatically).
+   Series colours are the validated categorical slots, always used in this fixed order. */
+.viz-root {
+  --surface-1: #fcfcfb;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --gridline: #e1e0d9;
+  --axis: #c3c2b7;
+  --hover-wash: rgba(11, 11, 11, 0.05);
+  --viz-border: rgba(11, 11, 11, 0.10);
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+}
+:root[data-theme="dark"] .viz-root {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --gridline: #2c2c2a;
+  --axis: #383835;
+  --hover-wash: rgba(255, 255, 255, 0.06);
+  --viz-border: rgba(255, 255, 255, 0.10);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+}
+
+.dashboard { max-width: 1200px; }
+.viz-filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: flex-end; margin: 1rem 0 1.5rem; padding: 0.75rem 1rem; border: 1px solid var(--viz-border); border-radius: 8px; background: var(--surface-1); }
+.viz-filters label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--text-secondary); }
+.viz-layout { display: grid; gap: 1.25rem; }
+.viz-card { background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--viz-border); border-radius: 8px; padding: 1rem 1.25rem 1.25rem; }
+.viz-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.viz-card h2 { margin: 0 0 0.2rem; font-size: 1.1rem; }
+.viz-subhead { margin: 1rem 0 0.25rem; font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+.viz-subtitle { margin: 0; max-width: 62rem; font-size: 0.85rem; color: var(--text-secondary); }
+.viz-card-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.viz-body { transition: opacity 0.15s ease; }
+.viz-body.loading { opacity: 0.55; }
+.viz-two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 0.5rem 2rem; }
+
+/* headline figures */
+.viz-kpis { display: flex; gap: 1rem; flex-wrap: wrap; align-items: stretch; }
+.hero { display: flex; flex-direction: column; justify-content: center; padding: 0.25rem 1.5rem 0.25rem 0.25rem; margin-right: 0.5rem; border-right: 1px solid var(--viz-border); }
+.hero-number { font-size: 3.5rem; font-weight: 700; line-height: 1; color: var(--text-primary); }
+.hero-label { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* chart anatomy */
+.viz-chart { position: relative; width: 100%; }
+.viz-chart svg { display: block; overflow: visible; }
+.viz-empty { margin: 0; padding: 1.5rem 0; color: var(--text-secondary); text-align: center; }
+.viz-grid { stroke: var(--gridline); stroke-width: 1; }
+.viz-baseline { stroke: var(--axis); stroke-width: 1; }
+.viz-tick { fill: var(--text-muted); font-size: 11px; }
+.viz-label { fill: var(--text-secondary); font-size: 12px; }
+.viz-value { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
+.viz-hit { fill: transparent; }
+.viz-hit.active { fill: var(--hover-wash); }
+.viz-column { outline: none; cursor: default; }
+.viz-column:focus-visible .viz-hit { fill: var(--hover-wash); stroke: var(--text-muted); stroke-width: 1; }
+.viz-legend { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; list-style: none; margin: 0 0 0.5rem; padding: 0; font-size: 0.85rem; color: var(--text-secondary); }
+.viz-legend li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.viz-legend strong { color: var(--text-primary); }
+.viz-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* one tooltip for every series: the value leads, the name follows */
+.viz-tooltip { position: absolute; z-index: 10; pointer-events: none; min-width: 9rem; padding: 0.5rem 0.7rem; background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--viz-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14); font-size: 0.82rem; }
+.viz-tooltip-title { font-weight: 600; margin-bottom: 0.3rem; }
+.viz-tooltip-row { display: flex; align-items: center; gap: 0.45rem; line-height: 1.5; }
+.viz-tooltip-row span:last-child { color: var(--text-secondary); }
+.viz-tooltip-key { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+.viz-tooltip-note { margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid var(--viz-border); color: var(--text-secondary); }
+
+/* the table twin of each chart */
+.viz-table-wrap { max-height: 24rem; overflow: auto; }
+.viz-table caption { text-align: left; font-size: 0.8rem; color: var(--text-secondary); padding-bottom: 0.3rem; }
+.viz-table th.num, .viz-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* charts must be able to get narrower than the picture they last drew (grid items default to min-width:auto) */
+.viz-layout > *, .viz-two-col > *, .viz-card, .viz-body, .viz-chart { min-width: 0; }
+.viz-filters input, .viz-filters select { height: 2.4rem; box-sizing: border-box; }

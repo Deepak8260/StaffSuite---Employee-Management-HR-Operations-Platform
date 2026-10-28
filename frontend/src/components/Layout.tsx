@@ -49,6 +49,7 @@ export default function Layout() {
         <strong>StaffSuite</strong>
         <nav>
           <Link to="/">Home</Link>
+          {canManage && <Link to="/admin/dashboard">Dashboard</Link>}
           <Link to="/directory">Directory</Link>
           <Link to="/org-chart">Org Chart</Link>
           {canListEmployees(role) && <Link to="/employees">{canManage ? 'Employees' : 'My Team'}</Link>}

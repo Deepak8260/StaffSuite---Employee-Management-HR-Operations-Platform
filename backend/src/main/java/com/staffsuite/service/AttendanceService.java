@@ -253,7 +253,7 @@ public class AttendanceService {
         return days;
     }
 
-    private static DayType dayType(Employee employee, LocalDate d, Map<LocalDate, PublicHoliday> holidays) {
+    static DayType dayType(Employee employee, LocalDate d, Map<LocalDate, PublicHoliday> holidays) {
         if (d.isBefore(employee.getJoiningDate())) {
             return DayType.BEFORE_JOINING;
         }
@@ -269,7 +269,7 @@ public class AttendanceService {
      * ABSENT); otherwise a past working day with nothing recorded is ABSENT. Today before check-in and
      * non-working days have no status.
      */
-    private static AttendanceStatus effectiveStatus(AttendanceRecord record, boolean onLeave, DayType type,
+    static AttendanceStatus effectiveStatus(AttendanceRecord record, boolean onLeave, DayType type,
             LocalDate date, LocalDate today) {
         if (record != null && record.getCheckInTime() != null) {
             return record.getStatus();
@@ -286,7 +286,7 @@ public class AttendanceService {
         return date.isBefore(today) ? AttendanceStatus.ABSENT : null;
     }
 
-    private static LeaveRequest findLeave(List<LeaveRequest> leaves, LocalDate d) {
+    static LeaveRequest findLeave(List<LeaveRequest> leaves, LocalDate d) {
         for (LeaveRequest l : leaves) {
             if (!d.isBefore(l.getStartDate()) && !d.isAfter(l.getEndDate())) {
                 return l;

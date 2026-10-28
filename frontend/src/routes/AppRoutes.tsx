@@ -20,6 +20,7 @@ import EmployeeListPage from '../features/employees/EmployeeListPage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
 import NotificationsPage from '../features/notifications/NotificationsPage'
+import HrDashboardPage from '../features/reports/HrDashboardPage'
 import HolidayCalendarPage from '../features/leave/HolidayCalendarPage'
 import HolidaysPage from '../features/leave/HolidaysPage'
 import LeaveApprovalsPage from '../features/leave/LeaveApprovalsPage'
@@ -52,6 +53,14 @@ export default function AppRoutes() {
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN']}>
+              <HrDashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/documents" element={<MyDocumentsPage />} />
         <Route
           path="/admin/documents"

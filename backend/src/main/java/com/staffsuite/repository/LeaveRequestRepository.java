@@ -47,6 +47,16 @@ public interface LeaveRequestRepository
     java.util.List<LeaveRequest> findOverlapping(@Param("employeeIds") Collection<Long> employeeIds,
             @Param("status") LeaveStatus status, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    /**
+     * Approved leave touching [from, to] for current employees, optionally in one department. Used by the
+     * utilisation report, which prorates each request to the part that falls inside the range.
+     */
+    @Query("select r from LeaveRequest r join fetch r.leaveType join fetch r.employee e left join e.department d "
+            + "where r.status = :status and r.startDate <= :to and r.endDate >= :from and e.deleted = false "
+            + "and (:departmentId is null or d.id = :departmentId)")
+    java.util.List<LeaveRequest> findForUtilization(@Param("status") LeaveStatus status, @Param("from") LocalDate from,
+            @Param("to") LocalDate to, @Param("departmentId") Long departmentId);
+
     @Override
     @EntityGraph(attributePaths = { "employee", "leaveType", "approver" })
     Page<LeaveRequest> findAll(Specification<LeaveRequest> spec, Pageable pageable);
