@@ -34,6 +34,10 @@ staffsuite:
     expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
   documents:
     expiry-window-days: "${DOCUMENT_EXPIRY_WINDOW_DAYS:30}"
+  notifications:
+    # in-app only; there is no email delivery. The scheduled job checks for documents entering the expiry window.
+    scheduling: "${NOTIFICATIONS_SCHEDULING:true}"
+    reminder-cron: "${NOTIFICATION_REMINDER_CRON:0 0 8 * * *}"
   attendance:
     late-cutoff: "${ATTENDANCE_LATE_CUTOFF:09:30}"
     half-day-hours: "${ATTENDANCE_HALF_DAY_HOURS:4}"

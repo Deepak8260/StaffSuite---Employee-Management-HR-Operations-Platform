@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { canListEmployees, canManageEmployees } from '../utils/roles'
+import NotificationBell from './NotificationBell'
 
 function NavMenu({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -84,6 +85,7 @@ export default function Layout() {
           <Link to="/change-password">Change password</Link>
         </nav>
         <span className="topbar-user">
+          <NotificationBell />
           {user?.email} ({role})
           <button onClick={handleLogout}>Log out</button>
         </span>

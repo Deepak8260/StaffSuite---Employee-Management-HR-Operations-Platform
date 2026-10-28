@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { approveLeave, listLeaveRequests, openAttachment, rejectLeave } from '../../api/leave'
 import Pager from '../../components/Pager'
@@ -22,7 +23,10 @@ interface Decision {
 
 export default function LeaveApprovalsPage({ scope }: Props) {
   const { user } = useAuth()
-  const [status, setStatus] = useState<LeaveStatus | ''>('PENDING')
+  // arriving from a notification (?request=ID): show all statuses and highlight that request
+  const [params] = useSearchParams()
+  const highlight = Number(params.get('request')) || null
+  const [status, setStatus] = useState<LeaveStatus | ''>(highlight ? '' : 'PENDING')
   const [page, setPage] = useState(0)
   const [data, setData] = useState<PageResponse<LeaveRequest> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -99,7 +103,7 @@ export default function LeaveApprovalsPage({ scope }: Props) {
             // The backend refuses self-approval, so the buttons are not offered for your own requests.
             const own = r.employeeId === user?.employeeId
             return (
-              <tr key={r.id}>
+              <tr key={r.id} className={r.id === highlight ? 'highlight' : undefined}>
                 <td>{r.employeeName}<br /><span className="hint">{r.employeeCode}</span></td>
                 <td>{r.leaveTypeName}</td>
                 <td>{formatDateOnly(r.startDate)} – {formatDateOnly(r.endDate)}</td>

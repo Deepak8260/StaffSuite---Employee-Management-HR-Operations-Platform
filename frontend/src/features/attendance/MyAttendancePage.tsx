@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { checkIn, checkOut, getAttendanceDays, listCorrections } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
 import AttendanceBadge from '../../components/AttendanceBadge'
@@ -25,6 +26,9 @@ export default function MyAttendancePage() {
   const employeeId = user?.employeeId ?? null
   const todayISO = toISO(new Date())
   const currentMonth = todayISO.slice(0, 7)
+  // arriving from a notification (?correction=ID): that request is highlighted in the list
+  const [params] = useSearchParams()
+  const highlight = Number(params.get('correction')) || null
 
   const [today, setToday] = useState<AttendanceDay | null>(null)
   const [month, setMonth] = useState(currentMonth)
@@ -255,7 +259,7 @@ export default function MyAttendancePage() {
           </thead>
           <tbody>
             {requests?.content.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} className={c.id === highlight ? 'highlight' : undefined}>
                 <td>{formatDateOnly(c.attendanceDate)}</td>
                 <td>
                   {c.requestedCheckIn ? `In ${timeOf(c.requestedCheckIn)}` : ''}

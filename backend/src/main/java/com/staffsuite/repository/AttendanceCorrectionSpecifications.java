@@ -19,6 +19,11 @@ public final class AttendanceCorrectionSpecifications {
         return (root, query, cb) -> cb.equal(root.get("requestedBy").get("manager").get("id"), managerEmployeeId);
     }
 
+    /** Everyone's corrections except one employee's own (nobody decides their own). */
+    public static Specification<AttendanceCorrection> notRequestedBy(Long employeeId) {
+        return (root, query, cb) -> cb.notEqual(root.get("requestedBy").get("id"), employeeId);
+    }
+
     public static Specification<AttendanceCorrection> withStatus(CorrectionStatus status) {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }

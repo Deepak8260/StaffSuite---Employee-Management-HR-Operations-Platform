@@ -21,6 +21,11 @@ public final class LeaveRequestSpecifications {
         return (root, query, cb) -> cb.equal(root.get("employee").get("manager").get("id"), managerEmployeeId);
     }
 
+    /** Everyone's requests except one employee's own (nobody decides their own leave). */
+    public static Specification<LeaveRequest> notOfEmployee(Long employeeId) {
+        return (root, query, cb) -> cb.notEqual(root.get("employee").get("id"), employeeId);
+    }
+
     public static Specification<LeaveRequest> withStatus(LeaveStatus status) {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }

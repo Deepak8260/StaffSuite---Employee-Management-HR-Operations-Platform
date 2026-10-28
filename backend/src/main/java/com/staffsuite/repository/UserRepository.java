@@ -14,5 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmployeeId(Long employeeId);
 
+    java.util.List<User> findByRoleAndActiveTrueOrderByIdAsc(com.staffsuite.entity.Role role);
+
     boolean existsByEmailIgnoreCase(String email);
 }

@@ -243,17 +243,18 @@ CREATE TABLE employee_documents (
 
 CREATE TABLE notifications (
     id         BIGINT        NOT NULL AUTO_INCREMENT,
-    user_id    BIGINT        NOT NULL,
-    type       VARCHAR(50)   NOT NULL,
-    title      VARCHAR(150)  NOT NULL,
+    recipient_id BIGINT      NOT NULL,   -- users.id of who it is for
+    type       VARCHAR(50)   NOT NULL,   -- e.g. LEAVE_REQUESTED; decides where the UI sends you
     message    VARCHAR(1000) NOT NULL,
+    reference_id BIGINT      NULL,       -- id of the leave request / correction / document it is about
     is_read    BOOLEAN       NOT NULL DEFAULT FALSE,
     read_at    TIMESTAMP     NULL,
     created_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    INDEX idx_notifications_user_read (user_id, is_read),
-    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id)
+    INDEX idx_notifications_recipient_read (recipient_id, is_read),
+    INDEX idx_notifications_dedupe (recipient_id, type, reference_id),
+    CONSTRAINT fk_notifications_recipient FOREIGN KEY (recipient_id) REFERENCES users (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE audit_logs (

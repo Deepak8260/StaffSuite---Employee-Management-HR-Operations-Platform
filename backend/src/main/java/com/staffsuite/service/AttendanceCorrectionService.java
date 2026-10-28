@@ -24,6 +24,7 @@ import com.staffsuite.entity.AttendanceStatus;
 import com.staffsuite.entity.CorrectionStatus;
 import com.staffsuite.entity.Employee;
 import com.staffsuite.entity.LeaveStatus;
+import com.staffsuite.entity.NotificationType;
 import com.staffsuite.entity.Role;
 import com.staffsuite.exception.ApiException;
 import com.staffsuite.repository.AttendanceCorrectionRepository;
@@ -51,6 +52,8 @@ public class AttendanceCorrectionService {
     private final AttendanceService attendanceService;
     private final AttendanceRules rules;
     private final AuditService auditService;
+    private final NotificationService notificationService;
+    private final NotificationRecipients recipients;
     private final Clock clock;
 
     // ------------------------------------------------------------------- submit
@@ -131,6 +134,9 @@ public class AttendanceCorrectionService {
         correction.setReason(request.reason().trim());
         correction = correctionRepository.save(correction);
         auditService.log(actor.userId(), "ATTENDANCE_CORRECTION_REQUESTED", ENTITY, correction.getId(), ip);
+        // tell whoever can decide it: the direct manager, or HR when there is no manager who can
+        notificationService.notifyAll(recipients.approversFor(employee), NotificationType.ATTENDANCE_CORRECTION_REQUESTED,
+                employee.getFullName() + " requested an attendance correction for " + date, correction.getId());
         return toResponse(correction);
     }
 
@@ -197,6 +203,7 @@ public class AttendanceCorrectionService {
 
         decide(correction, actor, CorrectionStatus.APPROVED, comment);
         auditService.log(actor.userId(), "ATTENDANCE_CORRECTION_APPROVED", ENTITY, id, ip);
+        notifyRequester(correction, NotificationType.ATTENDANCE_CORRECTION_APPROVED, "approved", comment);
         return toResponse(correction);
     }
 
@@ -208,6 +215,7 @@ public class AttendanceCorrectionService {
         AttendanceCorrection correction = lockPendingForDecision(actor, id);
         decide(correction, actor, CorrectionStatus.REJECTED, comment);
         auditService.log(actor.userId(), "ATTENDANCE_CORRECTION_REJECTED", ENTITY, id, ip);
+        notifyRequester(correction, NotificationType.ATTENDANCE_CORRECTION_REJECTED, "rejected", comment);
         return toResponse(correction);
     }
 
@@ -238,6 +246,17 @@ public class AttendanceCorrectionService {
     }
 
     // ------------------------------------------------------------------ helpers
+
+    /** Tells the employee who asked for the correction what was decided, and by whom. */
+    private void notifyRequester(AttendanceCorrection correction, NotificationType type, String outcome, String comment) {
+        recipients.userOf(correction.getRequestedBy().getId()).ifPresent(userId -> {
+            Employee reviewer = correction.getReviewedBy();
+            String by = reviewer == null ? "" : " by " + reviewer.getFullName();
+            String why = comment == null || comment.isBlank() ? "" : ". Comment: " + comment.trim();
+            notificationService.notify(userId, type, "Your attendance correction for "
+                    + correction.getAttendanceRecord().getAttendanceDate() + " was " + outcome + by + why, correction.getId());
+        });
+    }
 
     private boolean onApprovedLeave(Long employeeId, LocalDate date) {
         return !leaveRequestRepository.findOverlapping(List.of(employeeId), LeaveStatus.APPROVED, date, date).isEmpty();

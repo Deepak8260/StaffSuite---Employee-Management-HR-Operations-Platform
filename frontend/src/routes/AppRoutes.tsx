@@ -19,6 +19,7 @@ import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
+import NotificationsPage from '../features/notifications/NotificationsPage'
 import HolidayCalendarPage from '../features/leave/HolidayCalendarPage'
 import HolidaysPage from '../features/leave/HolidaysPage'
 import LeaveApprovalsPage from '../features/leave/LeaveApprovalsPage'
@@ -50,6 +51,7 @@ export default function AppRoutes() {
         <Route path="/my-profile" element={<MyProfilePage />} />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/documents" element={<MyDocumentsPage />} />
         <Route
           path="/admin/documents"

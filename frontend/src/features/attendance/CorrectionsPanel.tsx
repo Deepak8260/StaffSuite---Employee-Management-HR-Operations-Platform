@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { approveCorrection, listCorrections, rejectCorrection } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
@@ -22,7 +23,10 @@ interface Decision {
 
 export default function CorrectionsPanel({ scope }: Props) {
   const { user } = useAuth()
-  const [status, setStatus] = useState<CorrectionStatus | ''>('PENDING')
+  // arriving from a notification (?correction=ID): show all statuses and highlight that request
+  const [params] = useSearchParams()
+  const highlight = Number(params.get('correction')) || null
+  const [status, setStatus] = useState<CorrectionStatus | ''>(highlight ? '' : 'PENDING')
   const [page, setPage] = useState(0)
   const [data, setData] = useState<PageResponse<Correction> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -90,7 +94,7 @@ export default function CorrectionsPanel({ scope }: Props) {
             // The backend refuses self-decisions, so the buttons are not offered on your own requests.
             const own = c.employeeId === user?.employeeId
             return (
-              <tr key={c.id}>
+              <tr key={c.id} className={c.id === highlight ? 'highlight' : undefined}>
                 <td>{c.employeeName}<br /><span className="hint">{c.employeeCode}</span></td>
                 <td>{formatDateOnly(c.attendanceDate)}</td>
                 <td>{timeOf(c.currentCheckIn)} – {timeOf(c.currentCheckOut)}</td>

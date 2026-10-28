@@ -19,3 +19,5 @@ staffsuite:
     expiry-ms: 3600000
   storage:
     path: ./target/test-uploads
+  notifications:
+    scheduling: false

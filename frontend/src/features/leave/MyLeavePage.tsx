@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import {
   applyForLeave,
@@ -31,6 +32,9 @@ export default function MyLeavePage() {
   const { user } = useAuth()
   const employeeId = user?.employeeId ?? null
   const today = new Date()
+  // arriving from a notification (?request=ID): that request is highlighted in the history
+  const [params] = useSearchParams()
+  const highlight = Number(params.get('request')) || null
 
   const [types, setTypes] = useState<LeaveType[]>([])
   const [balances, setBalances] = useState<LeaveBalance[]>([])
@@ -279,7 +283,7 @@ export default function MyLeavePage() {
           </thead>
           <tbody>
             {history?.content.map((r) => (
-              <tr key={r.id}>
+              <tr key={r.id} className={r.id === highlight ? 'highlight' : undefined}>
                 <td>{r.leaveTypeName}</td>
                 <td>{formatDateOnly(r.startDate)} – {formatDateOnly(r.endDate)}</td>
                 <td>{r.totalDays}</td>

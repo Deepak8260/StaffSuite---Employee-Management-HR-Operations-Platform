@@ -30,6 +30,7 @@ import com.staffsuite.entity.LeaveBalance;
 import com.staffsuite.entity.LeaveRequest;
 import com.staffsuite.entity.LeaveStatus;
 import com.staffsuite.entity.LeaveType;
+import com.staffsuite.entity.NotificationType;
 import com.staffsuite.entity.PublicHoliday;
 import com.staffsuite.entity.Role;
 import com.staffsuite.exception.ApiException;
@@ -63,6 +64,8 @@ public class LeaveRequestService {
     private final LeaveBalanceService balanceService;
     private final AttachmentStorageService storageService;
     private final AuditService auditService;
+    private final NotificationService notificationService;
+    private final NotificationRecipients recipients;
 
     // -------------------------------------------------------------------- apply
 
@@ -132,6 +135,10 @@ public class LeaveRequestService {
         leave.setAttachmentUrl(attachment);
         leave = requestRepository.save(leave);
         auditService.log(actor.userId(), "LEAVE_REQUESTED", ENTITY, leave.getId(), ip);
+        // tell whoever can decide it: the direct manager, or HR when there is no manager who can
+        notificationService.notifyAll(recipients.approversFor(employee), NotificationType.LEAVE_REQUESTED,
+                employee.getFullName() + " requested " + plain(total) + (total.compareTo(BigDecimal.ONE) == 0 ? " day" : " days")
+                        + " of " + type.getName() + " leave (" + period(start, end) + ")", leave.getId());
         return toResponse(leave);
     }
 
@@ -155,6 +162,7 @@ public class LeaveRequestService {
         balance.recalculate();
         record(leave, actor, LeaveStatus.APPROVED, comment);
         auditService.log(actor.userId(), "LEAVE_APPROVED", ENTITY, id, ip);
+        notifyRequester(leave, NotificationType.LEAVE_APPROVED, "approved", comment);
         return toResponse(leave);
     }
 
@@ -166,6 +174,7 @@ public class LeaveRequestService {
         LeaveRequest leave = lockPendingForDecision(actor, id);
         record(leave, actor, LeaveStatus.REJECTED, comment);
         auditService.log(actor.userId(), "LEAVE_REJECTED", ENTITY, id, ip);
+        notifyRequester(leave, NotificationType.LEAVE_REJECTED, "rejected", comment);
         return toResponse(leave);
     }
 
@@ -352,6 +361,20 @@ public class LeaveRequestService {
 
     private static PageResponse<LeaveRequestResponse> empty(Pageable pageable) {
         return PageResponse.of(new PageImpl<LeaveRequest>(List.of(), pageable, 0), r -> null);
+    }
+
+    /** Tells the employee who asked for the leave what was decided, and by whom. */
+    private void notifyRequester(LeaveRequest leave, NotificationType type, String outcome, String comment) {
+        recipients.userOf(leave.getEmployee().getId()).ifPresent(userId -> {
+            String by = leave.getApprover() == null ? "" : " by " + leave.getApprover().getFullName();
+            String why = comment == null || comment.isBlank() ? "" : ". Comment: " + comment.trim();
+            notificationService.notify(userId, type, "Your " + leave.getLeaveType().getName() + " leave ("
+                    + period(leave.getStartDate(), leave.getEndDate()) + ") was " + outcome + by + why, leave.getId());
+        });
+    }
+
+    private static String period(LocalDate start, LocalDate end) {
+        return start.equals(end) ? start.toString() : start + " to " + end;
     }
 
     private static String plain(BigDecimal value) {
