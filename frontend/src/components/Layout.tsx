@@ -65,6 +65,8 @@ export default function Layout() {
             <Link to="/leave/calendar">Leave Calendar</Link>
             {role === 'MANAGER' && <Link to="/leave/team">Team Leave</Link>}
             {canManage && <Link to="/leave/all">All Leave</Link>}
+            {canManage && <Link to="/admin/leave-types">Leave Types</Link>}
+            {canManage && <Link to="/admin/holidays">Public Holidays</Link>}
           </NavMenu>
 
           {canManage && (

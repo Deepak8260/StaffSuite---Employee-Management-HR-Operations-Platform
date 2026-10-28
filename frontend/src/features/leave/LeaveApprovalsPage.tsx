@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { approveLeave, listLeaveRequests, openAttachment, rejectLeave } from '../../api/leave'
 import Pager from '../../components/Pager'
@@ -87,10 +87,14 @@ export default function LeaveApprovalsPage({ scope }: Props) {
     <main className="page">
       <div className="page-head">
         <h1>{scope === 'TEAM' ? 'Team leave requests' : 'All leave requests'}</h1>
-        <select value={status} onChange={(e) => { setStatus(e.target.value as LeaveStatus | ''); setPage(0) }}>
-          <option value="">All statuses</option>
-          {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}
-        </select>
+        <div className="actions">
+          {/* the ALL view is only reachable by HR/Admin, who are the ones who manage leave types */}
+          {scope === 'ALL' && <Link to="/admin/leave-types" className="button">Manage leave types</Link>}
+          <select value={status} onChange={(e) => { setStatus(e.target.value as LeaveStatus | ''); setPage(0) }}>
+            <option value="">All statuses</option>
+            {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
       {error && <p className="error">{error}</p>}
 

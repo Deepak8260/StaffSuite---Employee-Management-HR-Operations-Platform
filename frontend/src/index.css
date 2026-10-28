@@ -225,3 +225,12 @@ button.link-button:disabled { color: #9aa5b1; text-decoration: none; cursor: def
 .notif-type { font-size: 0.75rem; color: #52606d; text-transform: uppercase; letter-spacing: 0.04em; }
 .notif-time { flex: none; font-size: 0.82rem; color: #52606d; white-space: nowrap; }
 tr.highlight td { background: #fff8d6; }
+
+/* leave form: empty / error states and an unbroken legend */
+.notice-box { padding: 0.75rem 1rem; border: 1px solid #ecd27a; border-radius: 6px; background: #fff8d6; color: #5f4a00; font-size: 0.92rem; }
+.notice-box p { margin: 0.35rem 0 0; }
+.notice-box a { color: #1d4ed8; font-weight: 600; }
+.notice-box.error-box { border-color: #f0a8a2; background: #fde3e1; color: #7a1d14; }
+.notice-box.error-box button { margin-top: 0.5rem; }
+.legend-item { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; margin-right: 0.75rem; }
+.legend { row-gap: 0.25rem; }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import {
   applyForLeave,
@@ -24,6 +24,7 @@ import {
   type LeaveType,
 } from '../../types/leave'
 import { countWorkingDays, formatDateOnly, toISO } from '../../utils/dates'
+import { canManageEmployees } from '../../utils/roles'
 
 const PAGE_SIZE = 8
 const MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -37,6 +38,8 @@ export default function MyLeavePage() {
   const highlight = Number(params.get('request')) || null
 
   const [types, setTypes] = useState<LeaveType[]>([])
+  const [typesLoaded, setTypesLoaded] = useState(false)
+  const [typesError, setTypesError] = useState<string | null>(null)
   const [balances, setBalances] = useState<LeaveBalance[]>([])
   const [history, setHistory] = useState<PageResponse<LeaveRequest> | null>(null)
   const [statusFilter, setStatusFilter] = useState<LeaveStatus | ''>('')
@@ -75,9 +78,22 @@ export default function MyLeavePage() {
     }
   }, [employeeId, statusFilter, page])
 
-  useEffect(() => {
-    listLeaveTypes().then(setTypes).catch(() => setTypes([]))
+  const loadTypes = useCallback(() => {
+    setTypesError(null)
+    listLeaveTypes()
+      .then((t) => {
+        setTypes(t)
+        setTypesLoaded(true)
+      })
+      .catch((err) => {
+        setTypesError(errorMessage(err, 'Could not load the leave types'))
+        setTypesLoaded(true)
+      })
   }, [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadTypes()
+  }, [loadTypes])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshBalances()
@@ -92,6 +108,8 @@ export default function MyLeavePage() {
     [holidays],
   )
 
+  const noTypes = typesLoaded && !typesError && types.length === 0
+  const canManage = canManageEmployees(user?.role)
   const crossesYears = !!start && !!end && start.slice(0, 4) !== end.slice(0, 4)
   const rangeInvalid = !!start && !!end && end < start
   const workingDays = start && end && !rangeInvalid && !crossesYears ? countWorkingDays(start, end, mandatoryHolidays) : null
@@ -207,7 +225,9 @@ export default function MyLeavePage() {
                 <td><strong>{b.availableDays}</strong></td>
               </tr>
             ))}
-            {balances.length === 0 && <tr><td colSpan={6}>No leave types have been set up yet.</td></tr>}
+            {balances.length === 0 && (
+              <tr><td colSpan={6}>{noTypes ? 'No leave types have been set up yet.' : 'No balances to show yet.'}</td></tr>
+            )}
           </tbody>
         </table>
       </section>
@@ -216,9 +236,28 @@ export default function MyLeavePage() {
         <h2>Apply for leave</h2>
         <div className="leave-form-layout">
           <form onSubmit={handleSubmit} className="form">
+            {typesError && (
+              <div className="notice-box error-box">
+                <p>{typesError}</p>
+                <button type="button" onClick={loadTypes}>Try again</button>
+              </div>
+            )}
+            {typesLoaded && !typesError && noTypes && (
+              <div className="notice-box">
+                <strong>No leave types are available yet.</strong>
+                {canManage ? (
+                  <p>
+                    You can set them up now under <Link to="/admin/leave-types">Admin → Leave Types</Link>{' '}
+                    (for example Annual and Sick leave). They appear here straight away.
+                  </p>
+                ) : (
+                  <p>Leave can&apos;t be requested until HR sets up the leave types. Please ask HR to add them.</p>
+                )}
+              </div>
+            )}
             <label>Leave type
-              <select value={typeId} onChange={(e) => setTypeId(e.target.value)} required>
-                <option value="">Select…</option>
+              <select value={typeId} onChange={(e) => setTypeId(e.target.value)} required disabled={noTypes}>
+                <option value="">{!typesLoaded ? 'Loading…' : noTypes ? 'No leave types available' : 'Select…'}</option>
                 {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </label>
@@ -261,10 +300,12 @@ export default function MyLeavePage() {
               onNext={() => setView((v) => (v.month === 11 ? { year: v.year + 1, month: 0 } : { ...v, month: v.month + 1 }))}
             />
             <p className="hint legend">
-              <span className="key weekend" /> weekend · <span className="key holiday" /> public holiday ·{' '}
-              <span className="key optional" /> optional holiday · <span className="key range" /> selected. Click a day to
-              start, click another to set the end.
+              <span className="legend-item"><span className="key weekend" /> weekend</span>
+              <span className="legend-item"><span className="key holiday" /> public holiday</span>
+              <span className="legend-item"><span className="key optional" /> optional holiday</span>
+              <span className="legend-item"><span className="key range" /> selected</span>
             </p>
+            <p className="hint">Click a day to start, then click another day to set the end.</p>
           </div>
         </div>
       </section>
