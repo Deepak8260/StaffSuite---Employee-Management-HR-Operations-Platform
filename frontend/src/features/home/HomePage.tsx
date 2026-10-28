@@ -1,5 +1,5 @@
 import {
-  CalendarCheck, CalendarDays, CalendarOff, ClipboardList, FileText, FileWarning, Plane, UserPlus, Users, Hourglass, Upload,
+  ArrowUp, CalendarCheck, CalendarDays, CalendarOff, FileText, Hourglass, Plane, Upload, UserPlus, Users, Zap,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
@@ -12,6 +12,7 @@ import { getHeadcount, getOnboarding } from '../../api/reports'
 import AttendanceBadge from '../../components/AttendanceBadge'
 import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
+import BuildingArt from '../../components/ui/BuildingArt'
 import QuickActionButton from '../../components/ui/QuickActionButton'
 import SectionCard from '../../components/ui/SectionCard'
 import StatCard from '../../components/ui/StatCard'
@@ -22,11 +23,26 @@ import type { AttendanceDay, SummaryRow } from '../../types/attendance'
 import type { EmployeeDocument } from '../../types/documents'
 import type { LeaveRequest } from '../../types/leave'
 import type { PendingApprovals } from '../../types/notifications'
-import { formatDateOnly, toISO } from '../../utils/dates'
+import { fromISO, toISO } from '../../utils/dates'
 import { getConfig } from '../../utils/config'
 import { canManageEmployees } from '../../utils/roles'
 import { timeOf } from '../../utils/time'
 import StoredPdfViewer from '../documents/StoredPdfViewer'
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** "Tuesday, 28 October 2026" */
+function longDate(d: Date): string {
+  const weekday = d.toLocaleDateString('en-GB', { weekday: 'long' })
+  const month = d.toLocaleDateString('en-GB', { month: 'long' })
+  return `${weekday}, ${d.getDate()} ${month} ${d.getFullYear()}`
+}
+
+/** "03 Nov 2026" from a date or timestamp string. */
+function shortDay(value: string): string {
+  const d = value.length > 10 ? new Date(value) : fromISO(value)
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+}
 
 function greeting(hour: number): string {
   if (hour < 12) return 'Good morning'
@@ -47,28 +63,27 @@ export default function HomePage() {
   const now = new Date()
   const envLabel = getConfig().APP_ENV_LABEL
   const subtitle = canManageEmployees(user?.role)
-    ? 'Here is what is happening across the company today.'
+    ? "Here's what's happening in your organization today."
     : user?.role === 'MANAGER'
-      ? 'Here is your team at a glance.'
-      : 'Here is a summary of your leave and attendance.'
+      ? "Here's your team at a glance."
+      : "Here's a summary of your leave and attendance."
 
   return (
     <main className="page">
       <div className="hero">
         <div className="greeting">
-          <h1>{greeting(now.getHours())}, {firstName}</h1>
+          <p className="hello">{greeting(now.getHours())},</p>
+          <h1>{firstName}</h1>
           <p className="page-desc">{subtitle}</p>
         </div>
-        <div className="hero-right">
-          <span className="today-chip">
-            <CalendarDays size={16} aria-hidden="true" />
-            {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </span>
-          <div className="banner">
+        <div className="banner">
+          <span className="banner-date">{longDate(now)}</span>
+          <div className="banner-text">
             <strong>StaffSuite</strong>
             <p>Employee Management &amp; HR Operations Platform</p>
-            {envLabel && <span className="chip">{envLabel}</span>}
+            <span className="chip">{envLabel || window.location.hostname}</span>
           </div>
+          <BuildingArt className="banner-art" />
         </div>
       </div>
 
@@ -91,24 +106,24 @@ function QuickActions() {
   const leaveTo = manage ? '/leave/all' : role === 'MANAGER' ? '/leave/team' : '/leave'
   const uploadTo = hasProfile ? '/documents' : '/admin/documents'
   return (
-    <SectionCard title="Quick actions" icon={ClipboardList} tint="blue">
+    <SectionCard title="Quick Actions" icon={Zap} tint="orange">
       <div className="quick-grid">
-        {manage && <QuickActionButton to="/employees/new" icon={UserPlus} tint="blue" label="Add employee" />}
-        {hasProfile && <QuickActionButton to="/attendance" icon={CalendarCheck} tint="green" label="Mark attendance" />}
-        {(hasProfile || manage) && <QuickActionButton to={uploadTo} icon={Upload} tint="purple" label="Upload document" />}
-        <QuickActionButton to={leaveTo} icon={Plane} tint="orange" label={manage || role === 'MANAGER' ? 'Manage leave' : 'Apply for leave'} />
+        {manage && <QuickActionButton to="/employees/new" icon={UserPlus} tint="blue" label="Add Employee" />}
+        {hasProfile && <QuickActionButton to="/attendance" icon={CalendarCheck} tint="green" label="Mark Attendance" />}
+        {(hasProfile || manage) && <QuickActionButton to={uploadTo} icon={Upload} tint="purple" label="Upload Document" />}
+        <QuickActionButton to={leaveTo} icon={Plane} tint="orange" label={manage || role === 'MANAGER' ? 'Manage Leave' : 'Apply for Leave'} />
       </div>
     </SectionCard>
   )
 }
 
 function dateRange(l: LeaveRequest): string {
-  return l.startDate === l.endDate ? formatDateOnly(l.startDate) : `${formatDateOnly(l.startDate)} – ${formatDateOnly(l.endDate)}`
+  return l.startDate === l.endDate ? shortDay(l.startDate) : `${shortDay(l.startDate).slice(0, 6)} – ${shortDay(l.endDate)}`
 }
 
 function LeaveRequestsCard({ requests, viewAllTo, error }: { requests: LeaveRequest[] | null; viewAllTo: string; error?: string | null }) {
   return (
-    <SectionCard title="Upcoming leave requests" icon={Plane} tint="orange" viewAllTo={viewAllTo}>
+    <SectionCard title="Upcoming Leave Requests" icon={CalendarDays} tint="blue" viewAllTo={viewAllTo}>
       {error ? <p className="error">{error}</p>
         : requests === null ? <p className="hint">Loading…</p>
         : requests.length === 0 ? <p className="hint">No leave requests yet.</p>
@@ -119,8 +134,9 @@ function LeaveRequestsCard({ requests, viewAllTo, error }: { requests: LeaveRequ
                 <AvatarInitials name={l.employeeName} />
                 <span className="grow">
                   <span className="person-name">{l.employeeName}</span>
-                  <span className="person-meta">{l.leaveTypeName} · {dateRange(l)}</span>
+                  <span className="person-meta">{l.leaveTypeName}</span>
                 </span>
+                <span className="when">{dateRange(l)}</span>
                 <StatusCodePill status={l.status} />
               </li>
             ))}
@@ -167,45 +183,45 @@ function AdminHome() {
   const t = data?.today ?? null
   const counted = t ? t.present + t.late + t.halfDay + t.absent + t.onLeave : 0
   const presentToday = t ? t.present + t.late + t.halfDay : null
-  const expiredDocs = data?.documents?.filter((d) => d.expired).length ?? 0
-  const pct = (n: number, of: number) => (of > 0 ? `${Math.round((n / of) * 100)}%` : '0%')
+    const pct = (n: number, of: number) => (of > 0 ? `${Math.round((n / of) * 100)}%` : '0%')
 
   const columns: Column<EmployeeDocument>[] = [
-    { key: 'emp', header: 'Employee', render: (d) => (
-      <span className="person"><AvatarInitials name={d.employeeName} size="sm" /><span className="person-name">{d.employeeName}</span></span>
-    ) },
+    { key: 'emp', header: 'Employee', render: (d) => <strong>{d.employeeName}</strong> },
     { key: 'doc', header: 'Document', render: (d) => d.fileName },
     { key: 'type', header: 'Type', render: (d) => d.categoryName },
     { key: 'status', header: 'Status', render: (d) => d.expired
       ? <StatusPill tone="danger">Expired</StatusPill>
-      : <StatusPill tone="warning">Expiring soon{d.daysRemaining != null ? ` · ${d.daysRemaining}d` : ''}</StatusPill> },
-    { key: 'uploaded', header: 'Uploaded on', render: (d) => formatDateOnly(d.uploadedAt) },
+      : <StatusPill tone="soon">Expiring soon</StatusPill> },
+    { key: 'uploaded', header: 'Uploaded On', render: (d) => shortDay(d.uploadedAt) },
     { key: 'actions', header: 'Actions', align: 'right', render: (d) => <button type="button" onClick={() => setViewing(d)}>View</button> },
   ]
 
   return (
     <>
       <div className="stat-grid">
-        <StatCard icon={Users} tint="blue" label="Total employees" value={data?.total ?? '—'}
-          trend={data?.hiredThisMonth != null ? `${data.hiredThisMonth} joined this month` : undefined} />
-        <StatCard icon={CalendarCheck} tint="green" label="Present today" value={presentToday ?? '—'}
-          trend={t ? (counted === 0 ? 'Weekend or holiday: no attendance expected' : `${pct(presentToday ?? 0, t.employeeCount)} attendance rate`) : undefined} />
-        <StatCard icon={CalendarOff} tint="orange" label="On leave today" value={t?.onLeave ?? '—'}
-          trend={t ? `${pct(t.onLeave, t.employeeCount)} of total employees` : undefined} />
-        <StatCard icon={FileWarning} tint="purple" label="Pending documents" value={data?.documents?.length ?? '—'}
-          trend={data?.documents ? `${expiredDocs} expired, ${data.documents.length - expiredDocs} expiring soon` : undefined} />
+        <StatCard icon={Users} tint="blue" label="Total Employees" value={data?.total ?? '—'}
+          trend={data?.hiredThisMonth == null ? undefined : data.hiredThisMonth > 0
+            ? <span className="t-green"><ArrowUp size={14} aria-hidden="true" /> {data.hiredThisMonth} joined this month</span>
+            : <span className="t-muted">0 joined this month</span>} />
+        <StatCard icon={CalendarCheck} tint="green" label="Present Today" value={presentToday ?? '—'}
+          trend={t ? (counted === 0 ? <span className="t-muted">Weekend or holiday</span>
+            : <><span className="t-green">{pct(presentToday ?? 0, t.employeeCount)}</span> attendance rate</>) : undefined} />
+        <StatCard icon={Plane} tint="orange" label="On Leave Today" value={t?.onLeave ?? '—'}
+          trend={t ? <><span className="t-orange">{pct(t.onLeave, t.employeeCount)}</span> of total employees</> : undefined} />
+        <StatCard icon={FileText} tint="purple" label="Pending Documents" value={data?.documents?.length ?? '—'}
+          trend={data?.documents ? <span className="t-muted">{data.documents.length > 0 ? 'Need attention' : 'All clear'}</span> : undefined} />
       </div>
 
       <div className="home-columns">
-        <SectionCard title="Documents needing attention" icon={FileText} tint="purple" viewAllTo="/admin/documents/expiring">
+        <SectionCard title="Documents needing attention" icon={FileText} tint="blue" viewAllTo="/admin/documents/expiring">
           <DataTable columns={columns} rows={data ? (data.documents?.slice(0, 5) ?? []) : null} rowKey={(d) => d.id}
             emptyText="No documents are expired or expiring soon." />
         </SectionCard>
-        <div>
+        <div className="home-side">
           <QuickActions />
+          <LeaveRequestsCard requests={data?.leave ?? null} viewAllTo="/leave/all" error={data && data.leave === null ? 'Could not load leave requests' : null} />
         </div>
       </div>
-      <LeaveRequestsCard requests={data?.leave ?? null} viewAllTo="/leave/all" error={data && data.leave === null ? 'Could not load leave requests' : null} />
       {viewing && <StoredPdfViewer document={viewing} onClose={() => setViewing(null)} />}
     </>
   )

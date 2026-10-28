@@ -1,5 +1,6 @@
 import {
-  CalendarCheck, ChevronDown, FileText, Home, KeyRound, type LucideIcon, Network, Plane, ShieldCheck, Users, BookUser,
+  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network, PanelLeftClose, PanelLeftOpen,
+  ShieldCheck, Users, UsersRound,
 } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -11,35 +12,40 @@ interface Item {
   label: string
 }
 
-interface Group {
+type IconTone = 'blue' | 'green' | 'orange' | 'slate'
+
+interface GroupDef {
   label: string
   icon: LucideIcon
+  tone: IconTone
   items: Item[]
 }
 
-function SideLink({ to, label, icon: Icon, end }: { to: string; label: string; icon: LucideIcon; end?: boolean }) {
+function SideLink({ to, label, icon: Icon, tone, end, fill }: {
+  to: string; label: string; icon: LucideIcon; tone: IconTone; end?: boolean; fill?: boolean
+}) {
   return (
-    <NavLink to={to} end={end} className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}>
-      <Icon size={18} aria-hidden="true" />
-      <span>{label}</span>
+    <NavLink to={to} end={end} title={label} className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}>
+      <Icon size={20} strokeWidth={1.9} className={`ico ico-${tone}`} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />
+      <span className="side-label">{label}</span>
     </NavLink>
   )
 }
 
-function SideGroup({ group }: { group: Group }) {
+function SideGroup({ group, onExpandSidebar, collapsed }: { group: GroupDef; onExpandSidebar: () => void; collapsed: boolean }) {
   const { pathname } = useLocation()
   const containsActive = group.items.some((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
   const [open, setOpen] = useState(containsActive)
   const Icon = group.icon
-  // a group holding the current page is always shown open, so you can see where you are
+  // a group holding the current page is shown open, so you can see where you are
   const expanded = open || containsActive
   return (
     <div className="side-group">
-      <button type="button" className={`side-link side-group-button ${containsActive ? 'has-active' : ''}`}
-        aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
-        <Icon size={18} aria-hidden="true" />
-        <span>{group.label}</span>
-        <ChevronDown size={16} className={`chevron ${expanded ? 'open' : ''}`} aria-hidden="true" />
+      <button type="button" title={group.label} className={`side-link side-group-button ${containsActive ? 'has-active' : ''}`}
+        aria-expanded={expanded} onClick={() => (collapsed ? onExpandSidebar() : setOpen(!expanded))}>
+        <Icon size={20} strokeWidth={1.9} className={`ico ico-${group.tone}`} aria-hidden="true" />
+        <span className="side-label">{group.label}</span>
+        {expanded ? <ChevronDown size={16} className="chevron" aria-hidden="true" /> : <ChevronRight size={16} className="chevron" aria-hidden="true" />}
       </button>
       {expanded && (
         <div className="side-sub">
@@ -52,8 +58,14 @@ function SideGroup({ group }: { group: Group }) {
   )
 }
 
+interface Props {
+  collapsed: boolean
+  onToggleCollapsed: () => void
+  onNavigate?: () => void
+}
+
 /** Left navigation. Which entries appear depends only on the role (and whether the login has an employee record). */
-export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Props) {
   const { user } = useAuth()
   const role = user?.role
   const canManage = canManageEmployees(role)
@@ -85,16 +97,24 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav className="sidebar-nav" aria-label="Main" onClick={(e) => { if ((e.target as HTMLElement).closest('a')) onNavigate?.() }}>
-      <SideLink to="/" label="Home" icon={Home} end />
-      <SideLink to="/directory" label="Directory" icon={BookUser} />
-      <SideLink to="/org-chart" label="Org Chart" icon={Network} />
-      {canListEmployees(role) && <SideLink to="/employees" label={canManage ? 'Employees' : 'My Team'} icon={Users} />}
-      {attendance.length > 0 && <SideGroup group={{ label: 'Attendance', icon: CalendarCheck, items: attendance }} />}
-      <SideGroup group={{ label: 'Leave', icon: Plane, items: leave }} />
-      {documentsTo && <SideLink to={documentsTo} label="Documents" icon={FileText} end />}
-      {admin.length > 0 && <SideGroup group={{ label: 'Admin', icon: ShieldCheck, items: admin }} />}
-      <div className="side-spacer" />
-      <SideLink to="/change-password" label="Change Password" icon={KeyRound} />
+      <button type="button" className="icon-button expand-btn" aria-label="Expand sidebar" title="Expand sidebar" onClick={onToggleCollapsed}>
+        <PanelLeftOpen size={18} aria-hidden="true" />
+      </button>
+      <div className="side-row">
+        <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
+        <button type="button" className="collapse-btn" data-tip="Collapse sidebar" aria-label="Collapse sidebar" onClick={onToggleCollapsed}>
+          <PanelLeftClose size={18} aria-hidden="true" />
+        </button>
+      </div>
+      <SideLink to="/directory" label="Directory" icon={Users} tone="green" />
+      <SideLink to="/org-chart" label="Org Chart" icon={Network} tone="green" />
+      {canListEmployees(role) && <SideLink to="/employees" label={canManage ? 'Employees' : 'My Team'} icon={UsersRound} tone="green" />}
+      {attendance.length > 0 && <SideGroup group={{ label: 'Attendance', icon: CalendarDays, tone: 'orange', items: attendance }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />}
+      <SideGroup group={{ label: 'Leave', icon: FileText, tone: 'green', items: leave }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />
+      {documentsTo && <SideLink to={documentsTo} label="Documents" icon={File} tone="slate" end />}
+      <div className="side-rule" />
+      {admin.length > 0 && <SideGroup group={{ label: 'Admin', icon: ShieldCheck, tone: 'slate', items: admin }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />}
+      <SideLink to="/change-password" label="Change Password" icon={Lock} tone="slate" />
     </nav>
   )
 }

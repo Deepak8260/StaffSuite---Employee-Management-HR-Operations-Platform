@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { Tint } from './tints'
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   label: string
   value: string | number
   /** Small context line under the number, e.g. "75% attendance rate". */
-  trend?: string
+  trend?: ReactNode
 }
 
 export default function StatCard({ icon: Icon, tint, label, value, trend }: Props) {

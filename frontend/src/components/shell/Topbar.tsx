@@ -5,7 +5,6 @@ import { useAuth } from '../../hooks/useAuth'
 import { useDisplayName } from '../../hooks/useDisplayName'
 import type { Role } from '../../types/auth'
 import NotificationBell from '../NotificationBell'
-import AvatarInitials from '../ui/AvatarInitials'
 import StatusPill from '../ui/StatusPill'
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -58,17 +57,17 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
       <form className="global-search" role="search" onSubmit={search}>
         <Search size={18} aria-hidden="true" />
         <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search employees by name…" aria-label="Search employees" />
+          placeholder="Search employees, documents, leave requests..." aria-label="Search" />
       </form>
 
       <div className="topbar-right">
         <NotificationBell />
         <div className="user-menu" ref={menuRef}>
           <button type="button" className="user-button" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
-            <AvatarInitials name={fullName} />
+            <span className="user-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
             <span className="user-text">
               <span className="user-name">{fullName}</span>
-              <span className="user-role">{ROLE_LABEL[user.role]} / {user.role}</span>
+              <span className="user-role">{user.role}</span>
             </span>
             <ChevronDown size={16} aria-hidden="true" />
           </button>

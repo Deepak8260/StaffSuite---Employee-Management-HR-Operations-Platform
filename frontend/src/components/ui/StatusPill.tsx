@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type PillTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info'
+export type PillTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info' | 'soon'
 
 interface Props {
   tone?: PillTone
