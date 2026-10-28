@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createDepartment, deleteDepartment, listDepartments, updateDepartment } from '../../api/organization'
@@ -95,7 +96,7 @@ export default function DepartmentsPage() {
       </section>
 
       {error && <p className="error">{error}</p>}
-      {notice && <p className="success">{notice}</p>}
+      <Flash message={notice} onDone={() => setNotice(null)} />
 
       <table>
         <thead>

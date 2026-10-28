@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useEffect, useState, type FormEvent } from 'react'
 import { getEmployee, updateOwnProfile } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
@@ -74,7 +75,7 @@ export default function MyProfilePage() {
               <input value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} maxLength={150} />
             </label>
             {error && <p className="error">{error}</p>}
-            {saved && <p className="success">Profile updated.</p>}
+            <Flash message={saved ? 'Profile updated.' : null} onDone={() => setSaved(false)} />
             <button type="submit" disabled={busy}>Save changes</button>
           </form>
         </>

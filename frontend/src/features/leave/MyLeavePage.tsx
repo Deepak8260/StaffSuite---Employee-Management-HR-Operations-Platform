@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
@@ -206,7 +207,7 @@ export default function MyLeavePage() {
     <main className="page">
       <h1>My leave</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="success">{notice}</p>}
+      <Flash message={notice} onDone={() => setNotice(null)} />
 
       <section>
         <h2>Balances for {year}</h2>

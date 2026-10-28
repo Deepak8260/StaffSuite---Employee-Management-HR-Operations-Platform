@@ -13,6 +13,7 @@ import com.staffsuite.dto.OrganizationDtos.DepartmentResponse;
 import com.staffsuite.entity.Department;
 import com.staffsuite.exception.ApiException;
 import com.staffsuite.repository.DepartmentRepository;
+import com.staffsuite.repository.DesignationRepository;
 import com.staffsuite.repository.EmployeeRepository;
 import com.staffsuite.security.AuthenticatedUser;
 
@@ -26,6 +27,7 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
+    private final DesignationRepository designationRepository;
     private final AuditService auditService;
 
     @Transactional(readOnly = true)
@@ -84,6 +86,7 @@ public class DepartmentService {
             return;
         }
         assertNoActiveEmployees(department);
+        assertNoActiveDesignations(department);
         department.setActive(false);
         auditService.log(actor.userId(), "DEPARTMENT_DELETED", ENTITY, id, ip);
     }
@@ -94,6 +97,15 @@ public class DepartmentService {
             throw new ApiException(HttpStatus.CONFLICT, "Cannot delete department '" + department.getName() + "': "
                     + active + " active employee" + (active == 1 ? " is" : "s are")
                     + " still assigned to it. Reassign them to another department first.");
+        }
+    }
+
+    private void assertNoActiveDesignations(Department department) {
+        long active = designationRepository.countByDepartmentIdAndActiveTrue(department.getId());
+        if (active > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, "Cannot delete department '" + department.getName() + "': "
+                    + active + " active designation" + (active == 1 ? " belongs" : "s belong")
+                    + " to it. Move or deactivate them first.");
         }
     }
 

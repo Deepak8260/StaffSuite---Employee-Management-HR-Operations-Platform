@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
@@ -71,7 +72,7 @@ export default function EmployeeDocumentsPage() {
         </select>
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="success">{notice}</p>}
+      <Flash message={notice} onDone={() => setNotice(null)} />
 
       {selectedId !== null && (
         <>

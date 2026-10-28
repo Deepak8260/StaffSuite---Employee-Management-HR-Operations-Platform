@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { checkIn, checkOut, getAttendanceDays, listCorrections } from '../../api/attendance'
@@ -142,7 +143,7 @@ export default function MyAttendancePage() {
     <main className="page">
       <h1>My attendance</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="success">{notice}</p>}
+      <Flash message={notice} onDone={() => setNotice(null)} />
 
       <section className="today-card">
         <div>

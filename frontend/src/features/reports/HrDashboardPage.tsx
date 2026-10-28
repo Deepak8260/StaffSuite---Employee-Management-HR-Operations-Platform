@@ -1,3 +1,4 @@
+import ExpiringDocumentsWidget from '../documents/ExpiringDocumentsWidget'
 import { useEffect, useMemo, useState } from 'react'
 import { listDepartments } from '../../api/organization'
 import { downloadReportCsv, getAttendanceTrend, getHeadcount, getLeaveUtilization, getOnboarding } from '../../api/reports'
@@ -358,6 +359,7 @@ export default function HrDashboardPage() {
           />
         </div>
       </div>
+      <ExpiringDocumentsWidget />
     </main>
   )
 }

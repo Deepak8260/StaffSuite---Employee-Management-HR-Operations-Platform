@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useState, type FormEvent } from 'react'
 import { changePassword } from '../../api/auth'
 import { errorMessage } from '../../api/axiosInstance'
@@ -49,7 +50,7 @@ export default function ChangePasswordPage() {
           <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
         </label>
         {error && <p className="error">{error}</p>}
-        {success && <p className="success">Password changed.</p>}
+        <Flash message={success ? 'Password changed.' : null} onDone={() => setSuccess(false)} />
         <button type="submit" disabled={busy}>
           Change password
         </button>

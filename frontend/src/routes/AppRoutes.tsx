@@ -49,7 +49,14 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/directory" element={<DirectoryPage />} />
-        <Route path="/my-profile" element={<MyProfilePage />} />
+        <Route
+          path="/my-profile"
+          element={
+            <ProtectedRoute requireEmployee>
+              <MyProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
@@ -61,7 +68,14 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="/documents" element={<MyDocumentsPage />} />
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute requireEmployee>
+              <MyDocumentsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/documents"
           element={
@@ -86,7 +100,14 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="/attendance" element={<MyAttendancePage />} />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute requireEmployee>
+              <MyAttendancePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/attendance/team"
           element={
@@ -111,7 +132,14 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="/leave" element={<MyLeavePage />} />
+        <Route
+          path="/leave"
+          element={
+            <ProtectedRoute requireEmployee>
+              <MyLeavePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
         <Route path="/holidays" element={<HolidayCalendarPage />} />
         <Route

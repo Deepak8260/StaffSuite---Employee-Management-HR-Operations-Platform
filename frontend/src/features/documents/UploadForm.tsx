@@ -1,3 +1,4 @@
+import Flash from '../../components/Flash'
 import { useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { uploadDocument } from '../../api/documents'
@@ -129,7 +130,7 @@ export default function UploadForm({ employeeId, categories, allowVisibility, on
       )}
       {categories.length === 0 && <p className="error">No document categories exist yet. Ask HR to create some.</p>}
       {error && <p className="error">{error}</p>}
-      {notice && <p className="success">{notice}</p>}
+      <Flash message={notice} onDone={() => setNotice(null)} />
       <button type="submit" disabled={busy || !file || !categoryId}>{busy ? 'Uploading…' : 'Upload'}</button>
 
       {previewUrl && file && (
