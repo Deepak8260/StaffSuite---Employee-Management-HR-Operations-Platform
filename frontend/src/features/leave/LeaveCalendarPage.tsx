@@ -1,7 +1,10 @@
+import { CalendarDays } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { getLeaveCalendar } from '../../api/leave'
 import MonthGrid from '../../components/MonthGrid'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useAuth } from '../../hooks/useAuth'
 import type { Holiday, LeaveCalendar } from '../../types/leave'
 import { toISO } from '../../utils/dates'
@@ -47,9 +50,9 @@ export default function LeaveCalendarPage() {
 
   return (
     <main className="page">
-      <h1>Leave calendar</h1>
-      <p className="hint">Showing {scopeText} and public holidays.</p>
+      <PageHeader title="Leave calendar" description={`Showing ${scopeText} and public holidays.`} />
       {error && <p className="error">{error}</p>}
+      <SectionCard title="Month view" icon={CalendarDays} tint="orange">
       <MonthGrid
         year={view.year}
         month={view.month}
@@ -74,6 +77,7 @@ export default function LeaveCalendarPage() {
         <span className="key weekend" /> weekend · <span className="key holiday" /> public holiday ·{' '}
         <span className="key optional" /> optional holiday
       </p>
+      </SectionCard>
     </main>
   )
 }

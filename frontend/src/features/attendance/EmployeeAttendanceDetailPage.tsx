@@ -1,10 +1,15 @@
+import { CalendarDays, CheckCircle2, Clock, Hourglass, ListChecks, LogIn, Sun, TimerReset, UserX, Gauge } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getAttendanceDays } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
 import { getEmployee } from '../../api/employees'
-import AttendanceBadge from '../../components/AttendanceBadge'
 import AttendanceCalendar from '../../components/AttendanceCalendar'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatCard from '../../components/ui/StatCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import type { AttendanceDay } from '../../types/attendance'
 import type { Employee } from '../../types/employee'
 import { formatDateOnly, fromISO, toISO } from '../../utils/dates'
@@ -117,39 +122,52 @@ export default function EmployeeAttendanceDetailPage() {
   const [viewYear, viewMonth] = month.split('-').map(Number)
   const selected = days.find((d) => d.date === selectedDate) ?? null
 
+  const logColumns: Column<AttendanceDay>[] = [
+    { key: 'date', header: 'Date', render: (d) => formatDateOnly(d.date) },
+    { key: 'day', header: 'Day', render: (d) => fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' }) },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (d) => d.status ? <StatusCodePill status={d.status} /> : (
+        <span className="hint">{d.dayType === 'HOLIDAY' ? 'Holiday' : d.dayType === 'WEEKEND' ? 'Weekend' : '—'}</span>
+      ),
+    },
+    { key: 'in', header: 'Check in', render: (d) => timeOf(d.checkInTime) },
+    { key: 'out', header: 'Check out', render: (d) => timeOf(d.checkOutTime) },
+    { key: 'hours', header: 'Hours', render: (d) => hoursText(d.workingHours) },
+    { key: 'note', header: 'Note', render: (d) => <span className="hint">{d.leaveTypeName ?? d.holidayName ?? ''}{d.pendingCorrection ? 'Correction pending' : ''}</span> },
+  ]
+
   return (
     <main className="page">
       <p className="hint no-print"><Link to="/attendance/reports">← Attendance reports</Link></p>
-      <div className="page-head">
-        <div>
-          <h1>{employee ? employee.fullName : 'Employee attendance'}</h1>
-          {employee && (
-            <p className="hint">
-              {employee.employeeCode} · {employee.jobTitle}{employee.departmentName ? ` · ${employee.departmentName}` : ''}
-            </p>
-          )}
-        </div>
-        <div className="actions no-print">
-          <input type="month" value={month} max={currentMonth} onChange={(e) => e.target.value && setMonth(e.target.value)} />
-          <button onClick={exportCsv} disabled={rows.length === 0}>Export CSV</button>
-          <button onClick={() => window.print()}>Print</button>
-          <button onClick={() => navigate(-1)}>Back</button>
-        </div>
-      </div>
+      <PageHeader
+        title={employee ? employee.fullName : 'Employee attendance'}
+        description={employee ? `${employee.employeeCode} · ${employee.jobTitle}${employee.departmentName ? ` · ${employee.departmentName}` : ''}` : 'Day-by-day attendance for one employee.'}
+        actions={
+          <div className="actions no-print">
+            <input type="month" value={month} max={currentMonth} onChange={(e) => e.target.value && setMonth(e.target.value)} />
+            <button onClick={exportCsv} disabled={rows.length === 0}>Export CSV</button>
+            <button onClick={() => window.print()}>Print</button>
+            <button onClick={() => navigate(-1)}>Back</button>
+          </div>
+        }
+      />
       {error && <p className="error">{error}</p>}
 
-      <div className="holiday-summary">
-        <div className="stat"><span className="stat-number">{stats.worked}</span><span className="stat-label">Days worked</span></div>
-        <div className="stat"><span className="stat-number">{stats.late}</span><span className="stat-label">Late</span></div>
-        <div className="stat"><span className="stat-number">{stats.halfDay}</span><span className="stat-label">Half days</span></div>
-        <div className="stat"><span className="stat-number">{stats.absent}</span><span className="stat-label">Absent</span></div>
-        <div className="stat"><span className="stat-number">{stats.onLeave}</span><span className="stat-label">On leave</span></div>
-        <div className="stat"><span className="stat-number">{stats.hours.toFixed(1)}</span><span className="stat-label">Total hours</span></div>
-        <div className="stat"><span className="stat-number">{stats.avgIn}</span><span className="stat-label">Avg check-in</span></div>
-        <div className="stat"><span className="stat-number">{stats.avgHours}</span><span className="stat-label">Avg hours / day</span></div>
+      <div className="stat-grid">
+        <StatCard icon={CheckCircle2} tint="green" label="Days worked" value={stats.worked} />
+        <StatCard icon={Hourglass} tint="orange" label="Late" value={stats.late} />
+        <StatCard icon={TimerReset} tint="orange" label="Half days" value={stats.halfDay} />
+        <StatCard icon={UserX} tint="red" label="Absent" value={stats.absent} />
+        <StatCard icon={Sun} tint="blue" label="On leave" value={stats.onLeave} />
+        <StatCard icon={Clock} tint="green" label="Total hours" value={stats.hours.toFixed(1)} />
+        <StatCard icon={LogIn} tint="blue" label="Avg check-in" value={stats.avgIn} />
+        <StatCard icon={Gauge} tint="purple" label="Avg hours / day" value={stats.avgHours} />
       </div>
 
-      <div className="att-layout no-print">
+      <SectionCard title="Calendar" icon={CalendarDays} tint="green" className="no-print">
+      <div className="att-layout">
         <AttendanceCalendar
           year={viewYear}
           month={viewMonth - 1}
@@ -165,7 +183,7 @@ export default function EmployeeAttendanceDetailPage() {
           {selected && (
             <>
               <h3>{fromISO(selected.date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
-              <p><AttendanceBadge status={selected.status} /> {selected.leaveTypeName && <span className="hint">{selected.leaveTypeName}</span>}</p>
+              <p>{selected.status ? <StatusCodePill status={selected.status} /> : <span className="hint">—</span>} {selected.leaveTypeName && <span className="hint">{selected.leaveTypeName}</span>}</p>
               {selected.holidayName && <p className="hint">{selected.holidayName}</p>}
               <dl className="details one-col">
                 <div><dt>Check in</dt><dd>{timeOf(selected.checkInTime)}</dd></div>
@@ -177,36 +195,13 @@ export default function EmployeeAttendanceDetailPage() {
           )}
         </aside>
       </div>
+      </SectionCard>
 
-      <h2>Daily log</h2>
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Day</th><th>Status</th><th>Check in</th><th>Check out</th><th>Hours</th><th>Note</th></tr>
-        </thead>
-        <tbody>
-          {[...rows].reverse().map((d) => {
-            const nonWorking = d.dayType === 'WEEKEND' || d.dayType === 'HOLIDAY'
-            return (
-              <tr key={d.date} className={nonWorking && !d.checkInTime ? 'muted' : undefined}>
-                <td>{formatDateOnly(d.date)}</td>
-                <td>{fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' })}</td>
-                <td>
-                  {d.status ? <AttendanceBadge status={d.status} /> : (
-                    <span className="hint">{d.dayType === 'HOLIDAY' ? 'Holiday' : d.dayType === 'WEEKEND' ? 'Weekend' : '—'}</span>
-                  )}
-                </td>
-                <td>{timeOf(d.checkInTime)}</td>
-                <td>{timeOf(d.checkOutTime)}</td>
-                <td>{hoursText(d.workingHours)}</td>
-                <td className="hint">
-                  {d.leaveTypeName ?? d.holidayName ?? ''}{d.pendingCorrection ? 'Correction pending' : ''}
-                </td>
-              </tr>
-            )
-          })}
-          {rows.length === 0 && <tr><td colSpan={7}>No attendance to show for this month.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title="Daily log" icon={ListChecks} tint="green">
+      <DataTable columns={logColumns} rows={[...rows].reverse()} rowKey={(d) => d.date}
+        rowClassName={(d) => (d.dayType === 'WEEKEND' || d.dayType === 'HOLIDAY') && !d.checkInTime ? 'muted' : undefined}
+        emptyText="No attendance to show for this month." />
+      </SectionCard>
     </main>
   )
 }

@@ -1,7 +1,13 @@
+import { CalendarDays, CalendarHeart, PartyPopper, Sparkles } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { listHolidays } from '../../api/leave'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatCard from '../../components/ui/StatCard'
+import StatusPill from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { Holiday } from '../../types/leave'
 import { fromISO, isWeekend, toISO } from '../../utils/dates'
@@ -57,20 +63,36 @@ export default function HolidayCalendarPage() {
   const publicCount = holidays?.filter((h) => !h.optional).length ?? 0
   const optionalCount = holidays?.filter((h) => h.optional).length ?? 0
 
+  const isPast = (h: Holiday) => (year === today.getFullYear() ? h.holidayDate < todayISO : year < today.getFullYear())
+  const columns: Column<Holiday>[] = [
+    { key: 'date', header: 'Date', render: (h) => fromISO(h.holidayDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) },
+    { key: 'day', header: 'Day', render: (h) => {
+      const d = fromISO(h.holidayDate)
+      return <>{d.toLocaleDateString(undefined, { weekday: 'long' })}{isWeekend(d) && <span className="tag">Weekend</span>}</>
+    } },
+    { key: 'name', header: 'Holiday', render: (h) => (
+      <>
+        <strong>{h.name}</strong>
+        {h.description && <div className="hint">{h.description}</div>}
+      </>
+    ) },
+    { key: 'type', header: 'Type', render: (h) => <StatusPill tone={h.optional ? 'info' : 'success'}>{h.optional ? 'Optional' : 'Public holiday'}</StatusPill> },
+  ]
+
   return (
     <main className="page holiday-page">
-      <div className="page-head no-print">
-        <div>
-          <h1>Holiday calendar {year}</h1>
-          <p className="hint">Company holidays for the year. Public holidays are not deducted from your leave balance.</p>
-        </div>
-        <div className="actions">
-          <button onClick={() => setYear(year - 1)} aria-label="Previous year">‹</button>
-          <strong>{year}</strong>
-          <button onClick={() => setYear(year + 1)} aria-label="Next year">›</button>
-          <button onClick={() => window.print()}>Print</button>
-          {canManageEmployees(user?.role) && <Link to="/admin/holidays" className="button">Manage holidays</Link>}
-        </div>
+      <div className="no-print">
+        <PageHeader title={`Holiday calendar ${year}`}
+          description="Company holidays for the year. Public holidays are not deducted from your leave balance."
+          actions={(
+            <>
+              <button onClick={() => setYear(year - 1)} aria-label="Previous year">‹</button>
+              <strong>{year}</strong>
+              <button onClick={() => setYear(year + 1)} aria-label="Next year">›</button>
+              <button onClick={() => window.print()}>Print</button>
+              {canManageEmployees(user?.role) && <Link to="/admin/holidays" className="button">Manage holidays</Link>}
+            </>
+          )} />
       </div>
       <h1 className="print-only">Holiday calendar {year}</h1>
 
@@ -78,69 +100,24 @@ export default function HolidayCalendarPage() {
 
       {holidays && (
         <>
-          <div className="holiday-summary">
-            <div className="stat">
-              <span className="stat-number">{publicCount}</span>
-              <span className="stat-label">Public holidays</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">{optionalCount}</span>
-              <span className="stat-label">Optional holidays</span>
-            </div>
+          <div className="stat-grid">
+            <StatCard icon={CalendarDays} tint="orange" label="Public holidays" value={publicCount} />
+            <StatCard icon={Sparkles} tint="orange" label="Optional holidays" value={optionalCount} />
             {next && (
-              <div className="stat next">
-                <span className="stat-label">Next holiday</span>
-                <span className="stat-title">{next.name}</span>
-                <span className="stat-sub">
-                  {fromISO(next.holidayDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
-                  {' · '}
-                  {relative(daysUntil(next.holidayDate, today))}
-                </span>
-              </div>
+              <StatCard icon={CalendarHeart} tint="orange" label="Next holiday" value={next.name}
+                trend={`${fromISO(next.holidayDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · ${relative(daysUntil(next.holidayDate, today))}`} />
             )}
           </div>
 
           {holidays.length === 0 && <p>No holidays have been published for {year} yet.</p>}
 
-          {months.length > 0 && (
-            <table className="holiday-table">
-              <thead>
-                <tr><th className="col-date">Date</th><th className="col-day">Day</th><th>Holiday</th><th className="col-type">Type</th></tr>
-              </thead>
-              {months.map(([month, list]) => (
-                <tbody key={month}>
-                  <tr className="month-row">
-                    <th colSpan={4}>
-                      {new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long' })}
-                      <span className="month-count">{list.length} holiday{list.length === 1 ? '' : 's'}</span>
-                    </th>
-                  </tr>
-                  {list.map((h) => {
-                    const d = fromISO(h.holidayDate)
-                    const past = year === today.getFullYear() ? h.holidayDate < todayISO : year < today.getFullYear()
-                    return (
-                      <tr key={h.id} className={[past ? 'past' : '', next?.id === h.id ? 'upcoming' : ''].join(' ')}>
-                        <td className="col-date">{d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}</td>
-                        <td className="col-day">
-                          {d.toLocaleDateString(undefined, { weekday: 'long' })}
-                          {isWeekend(d) && <span className="tag">Weekend</span>}
-                        </td>
-                        <td>
-                          <strong>{h.name}</strong>
-                          {h.description && <div className="hint">{h.description}</div>}
-                        </td>
-                        <td className="col-type">
-                          <span className={`type-pill ${h.optional ? 'optional' : 'public'}`}>
-                            {h.optional ? 'Optional' : 'Public holiday'}
-                          </span>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              ))}
-            </table>
-          )}
+          {months.map(([month, list]) => (
+            <SectionCard key={month} title={new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long' })}
+              icon={PartyPopper} tint="orange" actions={<span className="hint">{list.length} holiday{list.length === 1 ? '' : 's'}</span>}>
+              <DataTable columns={columns} rows={list} rowKey={(h) => h.id}
+                rowClassName={(h) => [isPast(h) ? 'past' : '', next?.id === h.id ? 'upcoming' : ''].join(' ')} />
+            </SectionCard>
+          ))}
 
           <p className="hint note">
             Optional holidays are shown for information; they do not reduce the number of leave days if you apply on that date.

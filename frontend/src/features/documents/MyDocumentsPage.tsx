@@ -1,6 +1,9 @@
+import { FileText, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { downloadDocument, listCategories, listDocuments } from '../../api/documents'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useAuth } from '../../hooks/useAuth'
 import type { DocumentCategory, EmployeeDocument } from '../../types/documents'
 import DocumentList from './DocumentList'
@@ -44,7 +47,7 @@ export default function MyDocumentsPage() {
   if (employeeId === null) {
     return (
       <main className="page">
-        <h1>My documents</h1>
+        <PageHeader title="My documents" />
         <p>Your login is not linked to an employee record, so there are no documents to show.</p>
       </main>
     )
@@ -52,22 +55,19 @@ export default function MyDocumentsPage() {
 
   return (
     <main className="page">
-      <h1>My documents</h1>
-      <p className="hint">
-        Upload documents HR asks for, such as ID proof or certificates. Only you, your manager and HR can see them.
-        Some documents HR keeps private are not listed here. Only HR can remove a document.
-      </p>
+      <PageHeader
+        title="My documents"
+        description="Upload documents HR asks for. Only you, your manager and HR can see them; only HR can remove one."
+      />
       {error && <p className="error">{error}</p>}
 
-      <section>
-        <h2>Upload a document</h2>
+      <SectionCard title="Upload a document" icon={Upload} tint="purple">
         <UploadForm employeeId={employeeId} categories={categories} onUploaded={load} />
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2>Your documents</h2>
+      <SectionCard title="Your documents" icon={FileText} tint="purple">
         <DocumentList documents={documents} onDownload={handleDownload} onView={setViewing} />
-      </section>
+      </SectionCard>
 
       {viewing && <StoredPdfViewer document={viewing} onClose={() => setViewing(null)} />}
     </main>

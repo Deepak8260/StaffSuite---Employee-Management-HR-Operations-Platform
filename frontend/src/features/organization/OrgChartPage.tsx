@@ -1,7 +1,12 @@
+import { Network } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { getOrgChart } from '../../api/organization'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { OrgNode } from '../../types/organization'
 import { canManageEmployees } from '../../utils/roles'
@@ -39,15 +44,18 @@ function OrgTreeNode({ node, collapsed, onToggle, linkable }: NodeProps) {
         ) : (
           <span className="org-toggle spacer" />
         )}
-        <div>
-          <strong>{linkable(node.id) ? <Link to={`/employees/${node.id}`}>{node.fullName}</Link> : node.fullName}</strong>
-          <span className="org-meta">
-            {' '}· {node.jobTitle}
-            {node.departmentName ? ` · ${node.departmentName}` : ''}
-            {node.employmentStatus !== 'ACTIVE' ? ` · ${node.employmentStatus}` : ''}
-            {hasChildren ? ` · ${node.children.length} direct report${node.children.length === 1 ? '' : 's'}` : ''}
+        <span className="person">
+          <AvatarInitials name={node.fullName} size="sm" />
+          <span className="person-text">
+            <strong className="person-name">{linkable(node.id) ? <Link to={`/employees/${node.id}`}>{node.fullName}</Link> : node.fullName}</strong>
+            <span className="org-meta person-meta">
+              {node.jobTitle}
+              {node.departmentName ? ` · ${node.departmentName}` : ''}
+              {hasChildren ? ` · ${node.children.length} direct report${node.children.length === 1 ? '' : 's'}` : ''}
+            </span>
           </span>
-        </div>
+          {node.employmentStatus !== 'ACTIVE' && <StatusCodePill status={node.employmentStatus} />}
+        </span>
       </div>
       {hasChildren && !isCollapsed && (
         <ul>
@@ -88,23 +96,26 @@ export default function OrgChartPage() {
 
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>Org chart</h1>
-        {roots && (
-          <div className="actions">
+      <PageHeader
+        title="Org chart"
+        description="Who reports to whom across the company."
+        actions={roots && (
+          <>
             <button onClick={() => setCollapsed(new Set())}>Expand all</button>
             <button onClick={() => setCollapsed(new Set(idsWithChildren(roots)))}>Collapse all</button>
-          </div>
+          </>
         )}
-      </div>
-      {error && <p className="error">{error}</p>}
-      {roots && <p className="hint">{total} active employee{total === 1 ? '' : 's'}</p>}
-      {roots && roots.length === 0 && <p>No employees yet.</p>}
-      <ul className="org-tree">
-        {roots?.map((r) => (
-          <OrgTreeNode key={r.id} node={r} collapsed={collapsed} onToggle={toggle} linkable={linkable} />
-        ))}
-      </ul>
+      />
+      <SectionCard title="Reporting structure" icon={Network} tint="blue">
+        {error && <p className="error">{error}</p>}
+        {roots && <p className="hint">{total} active employee{total === 1 ? '' : 's'}</p>}
+        {roots && roots.length === 0 && <p>No employees yet.</p>}
+        <ul className="org-tree">
+          {roots?.map((r) => (
+            <OrgTreeNode key={r.id} node={r} collapsed={collapsed} onToggle={toggle} linkable={linkable} />
+          ))}
+        </ul>
+      </SectionCard>
     </main>
   )
 }

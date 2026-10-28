@@ -1,9 +1,16 @@
+import { FileWarning, Files } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { downloadDocument, listExpiringDocuments } from '../../api/documents'
-import ExpiryBadge from '../../components/ExpiryBadge'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatCard from '../../components/ui/StatCard'
+import StatusPill from '../../components/ui/StatusPill'
 import type { EmployeeDocument } from '../../types/documents'
+import ExpiryPill from './ExpiryPill'
 
 const WINDOWS = [30, 60, 90, 180, 365]
 
@@ -40,10 +47,44 @@ export default function ExpiringDocumentsPage() {
 
   const expiredCount = documents?.filter((d) => d.expired).length ?? 0
 
+  const columns: Column<EmployeeDocument>[] = [
+    {
+      key: 'employee',
+      header: 'Employee',
+      render: (d) => (
+        <div className="person">
+          <AvatarInitials name={d.employeeName} size="sm" />
+          <div className="person-text">
+            <span className="person-name">{d.employeeName}</span>
+            <span className="person-meta">{d.employeeCode}{d.departmentName ? ` · ${d.departmentName}` : ''}</span>
+          </div>
+        </div>
+      ),
+    },
+    { key: 'category', header: 'Category', render: (d) => d.categoryName },
+    {
+      key: 'file',
+      header: 'File',
+      render: (d) => <>{d.fileName}{d.visibility === 'HR_ONLY' && <> <StatusPill tone="info">HR only</StatusPill></>}</>,
+    },
+    { key: 'expiry', header: 'Expiry', render: (d) => <ExpiryPill expiryDate={d.expiryDate} daysRemaining={d.daysRemaining} /> },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      className: 'row-actions',
+      render: (d) => (
+        <>
+          <Link to={`/admin/documents?employee=${d.employeeId}`} className="button">Manage</Link>
+          <button type="button" onClick={() => handleDownload(d)}>Download</button>
+        </>
+      ),
+    },
+  ]
+
   return (
     <main className="page">
-      <h1>Expiring documents</h1>
-      <p className="hint">Documents of current employees that expire soon or have already expired, soonest first.</p>
+      <PageHeader title="Expiring documents" description="Documents of current employees that expire soon or have already expired, soonest first." />
       <div className="inline-form filters">
         <label className="check">Expiring within
           <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
@@ -57,34 +98,14 @@ export default function ExpiringDocumentsPage() {
       </div>
       {error && <p className="error">{error}</p>}
       {documents && (
-        <div className="holiday-summary">
-          <div className="stat"><span className="stat-number">{documents.length}</span><span className="stat-label">Documents listed</span></div>
-          <div className="stat"><span className="stat-number">{expiredCount}</span><span className="stat-label">Already expired</span></div>
+        <div className="stat-grid">
+          <StatCard icon={Files} tint="purple" label="Documents listed" value={documents.length} />
+          <StatCard icon={FileWarning} tint="red" label="Already expired" value={expiredCount} />
         </div>
       )}
-      <table>
-        <thead>
-          <tr><th>Employee</th><th>Category</th><th>File</th><th>Expiry</th><th></th></tr>
-        </thead>
-        <tbody>
-          {documents?.map((d) => (
-            <tr key={d.id}>
-              <td>
-                {d.employeeName}
-                <div className="hint">{d.employeeCode}{d.departmentName ? ` · ${d.departmentName}` : ''}</div>
-              </td>
-              <td>{d.categoryName}</td>
-              <td>{d.fileName}{d.visibility === 'HR_ONLY' && <span className="type-pill hr-only">HR only</span>}</td>
-              <td><ExpiryBadge expiryDate={d.expiryDate} daysRemaining={d.daysRemaining} /></td>
-              <td className="actions">
-                <Link to={`/admin/documents?employee=${d.employeeId}`} className="button">Manage</Link>
-                <button type="button" onClick={() => handleDownload(d)}>Download</button>
-              </td>
-            </tr>
-          ))}
-          {documents && documents.length === 0 && <tr><td colSpan={5}>Nothing is expiring in this window.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title="Documents" icon={Files} tint="purple">
+        <DataTable columns={columns} rows={documents} rowKey={(d) => d.id} emptyText="Nothing is expiring in this window." />
+      </SectionCard>
     </main>
   )
 }

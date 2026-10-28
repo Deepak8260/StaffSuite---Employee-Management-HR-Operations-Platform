@@ -1,7 +1,11 @@
+import { Briefcase } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getEmployee, offboardEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { Employee } from '../../types/employee'
 import { canManageEmployees, formatDate } from '../../utils/roles'
@@ -79,9 +83,19 @@ export default function EmployeeDetailPage() {
 
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>{employee.fullName}</h1>
-        <div className="actions">
+      <div className="page-header profile-header">
+        <div className="person profile-id">
+          <AvatarInitials name={employee.fullName} size="lg" />
+          <div className="person-text">
+            <h1>{employee.fullName}</h1>
+            <span className="person-meta">{employee.jobTitle}</span>
+            <span className="profile-status">
+              <StatusCodePill status={employee.employmentStatus} />
+              {employee.deleted && <span className="person-meta"> Offboarded</span>}
+            </span>
+          </div>
+        </div>
+        <div className="page-header-actions">
           {isSelf && !employee.deleted && <Link to="/my-profile" className="button">Edit my profile</Link>}
           {canManage && !employee.deleted && (
             <Link to={`/employees/${employee.id}/edit`} className="button">Edit</Link>
@@ -98,7 +112,9 @@ export default function EmployeeDetailPage() {
         </div>
       </div>
       {error && <p className="error">{error}</p>}
-      <EmployeeFields employee={employee} />
+      <SectionCard title="Employee details" icon={Briefcase} tint="blue">
+        <EmployeeFields employee={employee} />
+      </SectionCard>
 
       {reassigning && (
         <ReassignModal

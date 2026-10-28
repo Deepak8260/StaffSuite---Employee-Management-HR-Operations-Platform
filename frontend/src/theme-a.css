@@ -1,0 +1,11 @@
+/* page-specific styles for the redesign (area a) */
+.row-actions { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+.data-table a.person { color: inherit; text-decoration: none; }
+.data-table a.person:hover .person-name { text-decoration: underline; }
+.profile-header { align-items: center; }
+.profile-header h1 { margin: 0; }
+.profile-id { gap: 1rem; margin-bottom: 0.5rem; }
+.profile-header .profile-id { margin-bottom: 0; }
+.profile-status { margin-top: 0.3rem; }
+.org-node .person { gap: 0.6rem; }
+.org-node .person-name a { color: inherit; }

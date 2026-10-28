@@ -1,8 +1,11 @@
 import Flash from '../../components/Flash'
+import { FileText, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { deleteDocument, downloadDocument, listCategories, listDocuments } from '../../api/documents'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useReferenceData } from '../../hooks/useReferenceData'
 import type { DocumentCategory, EmployeeDocument } from '../../types/documents'
 import DocumentList from './DocumentList'
@@ -64,7 +67,7 @@ export default function EmployeeDocumentsPage() {
 
   return (
     <main className="page">
-      <h1>Employee documents</h1>
+      <PageHeader title="Employee documents" description="View, upload and delete documents for one employee at a time." />
       <div className="inline-form filters lookup">
         <select value={selectedId ?? ''} onChange={(e) => { setDocuments(null); setNotice(null); setParams(e.target.value ? { employee: e.target.value } : {}) }}>
           <option value="">Select an employee…</option>
@@ -76,17 +79,16 @@ export default function EmployeeDocumentsPage() {
 
       {selectedId !== null && (
         <>
-          <section>
-            <h2>Upload for {selectedName ?? 'this employee'}</h2>
+          <SectionCard title={`Upload for ${selectedName ?? 'this employee'}`} icon={Upload} tint="purple">
             <UploadForm employeeId={selectedId} categories={categories} allowVisibility onUploaded={load} />
-          </section>
-          <section>
-            <h2>Documents</h2>
+          </SectionCard>
+          <SectionCard title="Documents" icon={FileText} tint="purple">
+            {documents === null && <p className="hint">Loading…</p>}
             {documents && (
               <DocumentList documents={documents} onDownload={handleDownload} onView={setViewing} onDelete={handleDelete}
                 emptyText="This employee has no documents yet." />
             )}
-          </section>
+          </SectionCard>
           {viewing && <StoredPdfViewer document={viewing} onClose={() => setViewing(null)} />}
         </>
       )}

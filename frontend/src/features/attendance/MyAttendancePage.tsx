@@ -1,20 +1,29 @@
+import { CalendarDays, CheckCircle2, Clock, ClipboardEdit, Hourglass, Sun, TimerReset, UserX } from 'lucide-react'
 import Flash from '../../components/Flash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { checkIn, checkOut, getAttendanceDays, listCorrections } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
-import AttendanceBadge from '../../components/AttendanceBadge'
 import AttendanceCalendar from '../../components/AttendanceCalendar'
 import Pager from '../../components/Pager'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatCard from '../../components/ui/StatCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { PageResponse } from '../../types/auth'
-import type { AttendanceDay, Correction } from '../../types/attendance'
+import type { AttendanceDay, AttendanceStatus, Correction } from '../../types/attendance'
 import { addDays, formatDateOnly, fromISO, toISO } from '../../utils/dates'
 import { hoursText, monthRange, timeOf } from '../../utils/time'
 import CorrectionModal from './CorrectionModal'
 
 const CORRECTION_WINDOW_DAYS = 30
 const PAGE_SIZE = 5
+
+function StatusCell({ status }: { status: AttendanceStatus | null }) {
+  return status ? <StatusCodePill status={status} /> : <span className="hint">—</span>
+}
 
 function shiftMonth(month: string, delta: number): string {
   const [y, m] = month.split('-').map(Number)
@@ -127,7 +136,7 @@ export default function MyAttendancePage() {
   if (employeeId === null) {
     return (
       <main className="page">
-        <h1>My attendance</h1>
+        <PageHeader title="My attendance" />
         <p>Your login is not linked to an employee record, so there is no attendance to record.</p>
       </main>
     )
@@ -139,23 +148,78 @@ export default function MyAttendancePage() {
   const [viewYear, viewMonth] = month.split('-').map(Number)
   const selected = days.find((d) => d.date === selectedDate) ?? null
 
+  const dayColumns: Column<AttendanceDay>[] = [
+    { key: 'date', header: 'Date', render: (d) => formatDateOnly(d.date) },
+    { key: 'day', header: 'Day', render: (d) => fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' }) },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (d) => (
+        <>
+          {d.status ? <StatusCodePill status={d.status} /> : (
+            <span className="hint">{d.dayType === 'HOLIDAY' ? (d.holidayName ?? 'Holiday') : d.dayType === 'WEEKEND' ? 'Weekend' : '—'}</span>
+          )}
+          {d.status === 'ON_LEAVE' && d.leaveTypeName && <span className="hint"> {d.leaveTypeName}</span>}
+        </>
+      ),
+    },
+    { key: 'in', header: 'Check in', render: (d) => timeOf(d.checkInTime) },
+    { key: 'out', header: 'Check out', render: (d) => timeOf(d.checkOutTime) },
+    { key: 'hours', header: 'Hours', render: (d) => hoursText(d.workingHours) },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      className: 'row-actions',
+      render: (d) => (
+        <>
+          {d.pendingCorrection && <span className="hint">Correction pending</span>}
+          {canCorrect(d) && <button type="button" onClick={() => setCorrecting(d)}>Request correction</button>}
+        </>
+      ),
+    },
+  ]
+
+  const requestColumns: Column<Correction>[] = [
+    { key: 'date', header: 'Date', render: (c) => formatDateOnly(c.attendanceDate) },
+    {
+      key: 'requested',
+      header: 'Requested',
+      render: (c) => (
+        <>
+          {c.requestedCheckIn ? `In ${timeOf(c.requestedCheckIn)}` : ''}
+          {c.requestedCheckIn && c.requestedCheckOut ? ' · ' : ''}
+          {c.requestedCheckOut ? `Out ${timeOf(c.requestedCheckOut)}` : ''}
+        </>
+      ),
+    },
+    { key: 'reason', header: 'Reason', render: (c) => c.reason },
+    { key: 'status', header: 'Status', render: (c) => <StatusCodePill status={c.status} /> },
+    {
+      key: 'decision',
+      header: 'Decision',
+      render: (c) => <>{c.reviewedByName ? `${c.reviewedByName}: ` : ''}{c.reviewComment ?? (c.status === 'PENDING' ? 'Awaiting decision' : '—')}</>,
+    },
+  ]
+
   return (
     <main className="page">
-      <h1>My attendance</h1>
+      <PageHeader title="My attendance" description="Check in and out, and review your attendance and correction requests." />
       {error && <p className="error">{error}</p>}
       <Flash message={notice} onDone={() => setNotice(null)} />
 
-      <section className="today-card">
+      <SectionCard title="Today" icon={Clock} tint="green" className="today-section">
+      <div className="today-card">
         <div>
           <div className="today-date">{new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
           <div className="today-status">
             {onLeaveToday && <>You are on approved leave today ({today?.leaveTypeName}).</>}
             {!onLeaveToday && !checkedIn && <>You have not checked in yet.</>}
-            {checkedIn && !checkedOut && <>Checked in at <strong>{timeOf(today?.checkInTime)}</strong> <AttendanceBadge status={today?.status ?? null} /></>}
+            {checkedIn && !checkedOut && <>Checked in at <strong>{timeOf(today?.checkInTime)}</strong> <StatusCell status={today?.status ?? null} /></>}
             {checkedOut && (
               <>
                 {timeOf(today?.checkInTime)} – {timeOf(today?.checkOutTime)} · <strong>{hoursText(today?.workingHours)}</strong>{' '}
-                <AttendanceBadge status={today?.status ?? null} />
+                <StatusCell status={today?.status ?? null} />
               </>
             )}
           </div>
@@ -164,11 +228,23 @@ export default function MyAttendancePage() {
           <button disabled={busy || checkedIn || onLeaveToday} onClick={() => punch('in')}>Check in</button>
           <button disabled={busy || !checkedIn || checkedOut} onClick={() => punch('out')}>Check out</button>
         </div>
-      </section>
+      </div>
+      </SectionCard>
 
-      <section>
-        <div className="page-head">
-          <h2>Attendance history</h2>
+      <div className="stat-grid">
+        <StatCard icon={CheckCircle2} tint="green" label="Days worked" value={counts.present + counts.late + counts.halfDay} />
+        <StatCard icon={Hourglass} tint="orange" label="Late" value={counts.late} />
+        <StatCard icon={TimerReset} tint="orange" label="Half days" value={counts.halfDay} />
+        <StatCard icon={UserX} tint="red" label="Absent" value={counts.absent} />
+        <StatCard icon={Sun} tint="blue" label="On leave" value={counts.onLeave} />
+        <StatCard icon={Clock} tint="green" label="Hours" value={counts.hours.toFixed(1)} />
+      </div>
+
+      <SectionCard
+        title="Attendance history"
+        icon={CalendarDays}
+        tint="green"
+        actions={
           <div className="actions">
             <div className="segmented" role="group" aria-label="View">
               <button type="button" className={view === 'calendar' ? 'on' : ''} onClick={() => setView('calendar')}>Calendar</button>
@@ -176,15 +252,8 @@ export default function MyAttendancePage() {
             </div>
             <input type="month" value={month} max={currentMonth} onChange={(e) => e.target.value && setMonth(e.target.value)} />
           </div>
-        </div>
-        <div className="holiday-summary">
-          <div className="stat"><span className="stat-number">{counts.present + counts.late + counts.halfDay}</span><span className="stat-label">Days worked</span></div>
-          <div className="stat"><span className="stat-number">{counts.late}</span><span className="stat-label">Late</span></div>
-          <div className="stat"><span className="stat-number">{counts.halfDay}</span><span className="stat-label">Half days</span></div>
-          <div className="stat"><span className="stat-number">{counts.absent}</span><span className="stat-label">Absent</span></div>
-          <div className="stat"><span className="stat-number">{counts.onLeave}</span><span className="stat-label">On leave</span></div>
-          <div className="stat"><span className="stat-number">{counts.hours.toFixed(1)}</span><span className="stat-label">Hours</span></div>
-        </div>
+        }
+      >
 
         {view === 'calendar' && (
           <div className="att-layout">
@@ -203,7 +272,7 @@ export default function MyAttendancePage() {
               {selected && (
                 <>
                   <h3>{fromISO(selected.date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
-                  <p><AttendanceBadge status={selected.status} /> {selected.leaveTypeName && <span className="hint">{selected.leaveTypeName}</span>}</p>
+                  <p><StatusCell status={selected.status} /> {selected.leaveTypeName && <span className="hint">{selected.leaveTypeName}</span>}</p>
                   {selected.holidayName && <p className="hint">{selected.holidayName}</p>}
                   <dl className="details one-col">
                     <div><dt>Check in</dt><dd>{timeOf(selected.checkInTime)}</dd></div>
@@ -218,65 +287,14 @@ export default function MyAttendancePage() {
           </div>
         )}
 
-        {view === 'list' && (
-          <table>
-            <thead>
-              <tr><th>Date</th><th>Day</th><th>Status</th><th>Check in</th><th>Check out</th><th>Hours</th><th></th></tr>
-            </thead>
-            <tbody>
-              {shownDays.map((d) => {
-                const nonWorking = d.dayType === 'WEEKEND' || d.dayType === 'HOLIDAY'
-                return (
-                  <tr key={d.date} className={nonWorking && !d.checkInTime ? 'muted' : undefined}>
-                    <td>{formatDateOnly(d.date)}</td>
-                    <td>{fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' })}</td>
-                    <td>
-                      {d.status ? <AttendanceBadge status={d.status} /> : (
-                        <span className="hint">{d.dayType === 'HOLIDAY' ? (d.holidayName ?? 'Holiday') : d.dayType === 'WEEKEND' ? 'Weekend' : '—'}</span>
-                      )}
-                      {d.status === 'ON_LEAVE' && d.leaveTypeName && <span className="hint"> {d.leaveTypeName}</span>}
-                    </td>
-                    <td>{timeOf(d.checkInTime)}</td>
-                    <td>{timeOf(d.checkOutTime)}</td>
-                    <td>{hoursText(d.workingHours)}</td>
-                    <td className="actions">
-                      {d.pendingCorrection && <span className="hint">Correction pending</span>}
-                      {canCorrect(d) && <button type="button" onClick={() => setCorrecting(d)}>Request correction</button>}
-                    </td>
-                  </tr>
-                )
-              })}
-              {shownDays.length === 0 && <tr><td colSpan={7}>Nothing to show for this month.</td></tr>}
-            </tbody>
-          </table>
-        )}
-      </section>
+        {view === 'list' && <DataTable columns={dayColumns} rows={shownDays} rowKey={(d) => d.date} rowClassName={(d) => (d.dayType === 'WEEKEND' || d.dayType === 'HOLIDAY') && !d.checkInTime ? 'muted' : undefined} emptyText="Nothing to show for this month." />}
+      </SectionCard>
 
-      <section>
-        <h2>My correction requests</h2>
-        <table>
-          <thead>
-            <tr><th>Date</th><th>Requested</th><th>Reason</th><th>Status</th><th>Decision</th></tr>
-          </thead>
-          <tbody>
-            {requests?.content.map((c) => (
-              <tr key={c.id} className={c.id === highlight ? 'highlight' : undefined}>
-                <td>{formatDateOnly(c.attendanceDate)}</td>
-                <td>
-                  {c.requestedCheckIn ? `In ${timeOf(c.requestedCheckIn)}` : ''}
-                  {c.requestedCheckIn && c.requestedCheckOut ? ' · ' : ''}
-                  {c.requestedCheckOut ? `Out ${timeOf(c.requestedCheckOut)}` : ''}
-                </td>
-                <td>{c.reason}</td>
-                <td><span className={`badge ${c.status.toLowerCase()}`}>{c.status}</span></td>
-                <td>{c.reviewedByName ? `${c.reviewedByName}: ` : ''}{c.reviewComment ?? (c.status === 'PENDING' ? 'Awaiting decision' : '—')}</td>
-              </tr>
-            ))}
-            {requests && requests.content.length === 0 && <tr><td colSpan={5}>No correction requests.</td></tr>}
-          </tbody>
-        </table>
+      <SectionCard title="My correction requests" icon={ClipboardEdit} tint="orange">
+        <DataTable columns={requestColumns} rows={requests ? requests.content : null} rowKey={(c) => c.id}
+          rowClassName={(c) => (c.id === highlight ? 'highlight' : undefined)} emptyText="No correction requests." />
         {requests && <Pager data={requests} onPage={setRequestPage} noun="requests" />}
-      </section>
+      </SectionCard>
 
       {correcting && (
         <CorrectionModal

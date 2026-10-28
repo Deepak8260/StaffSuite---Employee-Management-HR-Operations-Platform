@@ -1,6 +1,11 @@
+import { CalendarPlus, ListChecks } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createLeaveType, listLeaveTypes, updateLeaveType } from '../../api/leave'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import type { LeaveType, LeaveTypeInput } from '../../types/leave'
 
 export default function LeaveTypesPage() {
@@ -73,11 +78,30 @@ export default function LeaveTypesPage() {
     }
   }
 
+  const columns: Column<LeaveType>[] = [
+    { key: 'name', header: 'Name', render: (t) => t.name },
+    { key: 'days', header: 'Days / year', render: (t) => t.annualEntitlementDays },
+    { key: 'carry', header: 'Carry-forward', render: (t) => (t.carryForwardAllowed ? `Up to ${t.maxCarryForwardDays} days` : 'No') },
+    { key: 'desc', header: 'Description', render: (t) => t.description ?? '—' },
+    { key: 'status', header: 'Status', render: (t) => <StatusPill tone={t.active ? 'success' : 'neutral'}>{t.active ? 'Active' : 'Inactive'}</StatusPill> },
+    { key: 'actions', header: '', align: 'right', render: (t) => (
+      <span className="actions">
+        {t.active ? (
+          <>
+            <button onClick={() => startEdit(t)}>Edit</button>
+            <button onClick={() => setActive(t, false)}>Deactivate</button>
+          </>
+        ) : (
+          <button onClick={() => setActive(t, true)}>Restore</button>
+        )}
+      </span>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <h1>Leave types</h1>
-      <section>
-        <h2>{editing ? `Edit "${editing.name}"` : 'New leave type'}</h2>
+      <PageHeader title="Leave types" description="Define the kinds of leave employees can request." />
+      <SectionCard title={editing ? `Edit "${editing.name}"` : 'New leave type'} icon={CalendarPlus} tint="orange">
         <form onSubmit={handleSubmit} className="inline-form">
           <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required />
           <input type="number" min={0} max={366} step="0.5" placeholder="Days per year" value={days}
@@ -95,36 +119,13 @@ export default function LeaveTypesPage() {
         <p className="hint">
           Changing the yearly days affects balances created from now on; balances already created for a year are not changed.
         </p>
-      </section>
+      </SectionCard>
 
       {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr><th>Name</th><th>Days / year</th><th>Carry-forward</th><th>Description</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {types.map((t) => (
-            <tr key={t.id} className={t.active ? undefined : 'muted'}>
-              <td>{t.name}</td>
-              <td>{t.annualEntitlementDays}</td>
-              <td>{t.carryForwardAllowed ? `Up to ${t.maxCarryForwardDays} days` : 'No'}</td>
-              <td>{t.description ?? '—'}</td>
-              <td>{t.active ? 'Active' : 'Inactive'}</td>
-              <td className="actions">
-                {t.active ? (
-                  <>
-                    <button onClick={() => startEdit(t)}>Edit</button>
-                    <button onClick={() => setActive(t, false)}>Deactivate</button>
-                  </>
-                ) : (
-                  <button onClick={() => setActive(t, true)}>Restore</button>
-                )}
-              </td>
-            </tr>
-          ))}
-          {types.length === 0 && <tr><td colSpan={6}>No leave types yet. Create the first one above.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title="All leave types" icon={ListChecks} tint="orange">
+        <DataTable columns={columns} rows={types} rowKey={(t) => t.id}
+          rowClassName={(t) => (t.active ? undefined : 'muted')} emptyText="No leave types yet. Create the first one above." />
+      </SectionCard>
     </main>
   )
 }

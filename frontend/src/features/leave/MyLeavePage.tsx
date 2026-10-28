@@ -1,3 +1,4 @@
+import { CalendarDays, CalendarPlus, History } from 'lucide-react'
 import Flash from '../../components/Flash'
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -13,7 +14,11 @@ import {
 } from '../../api/leave'
 import MonthGrid from '../../components/MonthGrid'
 import Pager from '../../components/Pager'
-import StatusBadge from '../../components/StatusBadge'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatCard from '../../components/ui/StatCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import { useHolidays } from '../../hooks/useHolidays'
 import type { PageResponse } from '../../types/auth'
@@ -194,8 +199,10 @@ export default function MyLeavePage() {
   if (employeeId === null) {
     return (
       <main className="page">
-        <h1>My leave</h1>
-        <p>Your login is not linked to an employee record, so there is no leave to manage.</p>
+        <PageHeader title="My leave" description="Balances, requests and leave history." />
+        <SectionCard title="My leave" icon={CalendarDays} tint="orange">
+          <p>Your login is not linked to an employee record, so there is no leave to manage.</p>
+        </SectionCard>
       </main>
     )
   }
@@ -203,38 +210,42 @@ export default function MyLeavePage() {
   const todayISO = toISO(today)
   const canCancel = (r: LeaveRequest) => r.status === 'PENDING' || (r.status === 'APPROVED' && r.startDate > todayISO)
 
+  const columns: Column<LeaveRequest>[] = [
+    { key: 'type', header: 'Type', render: (r) => r.leaveTypeName },
+    { key: 'dates', header: 'Dates', render: (r) => `${formatDateOnly(r.startDate)} – ${formatDateOnly(r.endDate)}` },
+    { key: 'days', header: 'Days', render: (r) => r.totalDays },
+    { key: 'status', header: 'Status', render: (r) => <StatusCodePill status={r.status} /> },
+    { key: 'decision', header: 'Decision', render: (r) => (
+      <>{r.approverName ? `${r.approverName}: ` : ''}{r.approverComment ?? (r.status === 'PENDING' ? 'Awaiting decision' : '—')}</>
+    ) },
+    { key: 'actions', header: '', align: 'right', render: (r) => (
+      <span className="actions">
+        {r.hasAttachment && <button type="button" onClick={() => handleAttachment(r.id)}>Attachment</button>}
+        {canCancel(r) && <button type="button" className="danger" onClick={() => handleCancel(r)}>Cancel</button>}
+      </span>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <h1>My leave</h1>
+      <PageHeader title="My leave" description="Check your balances, apply for leave and follow your requests." />
       {error && <p className="error">{error}</p>}
       <Flash message={notice} onDone={() => setNotice(null)} />
 
-      <section>
-        <h2>Balances for {year}</h2>
-        <table>
-          <thead>
-            <tr><th>Leave type</th><th>Allocated</th><th>Carried forward</th><th>Used</th><th>Pending</th><th>Available</th></tr>
-          </thead>
-          <tbody>
+      <SectionCard title={`Balances for ${year}`} icon={CalendarDays} tint="orange">
+        {balances.length === 0 ? (
+          <p className="hint">{noTypes ? 'No leave types have been set up yet.' : 'No balances to show yet.'}</p>
+        ) : (
+          <div className="stat-grid">
             {balances.map((b) => (
-              <tr key={b.leaveTypeId}>
-                <td>{b.leaveTypeName}</td>
-                <td>{b.allocatedDays}</td>
-                <td>{b.carriedForwardDays}</td>
-                <td>{b.usedDays}</td>
-                <td>{b.pendingDays}</td>
-                <td><strong>{b.availableDays}</strong></td>
-              </tr>
+              <StatCard key={b.leaveTypeId} icon={CalendarDays} tint="orange" label={`${b.leaveTypeName} available`} value={b.availableDays}
+                trend={`Allocated ${b.allocatedDays} · Carried forward ${b.carriedForwardDays} · Used ${b.usedDays} · Pending ${b.pendingDays}`} />
             ))}
-            {balances.length === 0 && (
-              <tr><td colSpan={6}>{noTypes ? 'No leave types have been set up yet.' : 'No balances to show yet.'}</td></tr>
-            )}
-          </tbody>
-        </table>
-      </section>
+          </div>
+        )}
+      </SectionCard>
 
-      <section>
-        <h2>Apply for leave</h2>
+      <SectionCard title="Apply for leave" icon={CalendarPlus} tint="orange">
         <div className="leave-form-layout">
           <form onSubmit={handleSubmit} className="form">
             {typesError && (
@@ -309,41 +320,19 @@ export default function MyLeavePage() {
             <p className="hint">Click a day to start, then click another day to set the end.</p>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <div className="page-head">
-          <h2>My requests</h2>
+      <SectionCard title="My requests" icon={History} tint="orange"
+        actions={(
           <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as LeaveStatus | ''); setPage(0) }}>
             <option value="">All statuses</option>
             {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}
           </select>
-        </div>
-        <table>
-          <thead>
-            <tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th>Decision</th><th></th></tr>
-          </thead>
-          <tbody>
-            {history?.content.map((r) => (
-              <tr key={r.id} className={r.id === highlight ? 'highlight' : undefined}>
-                <td>{r.leaveTypeName}</td>
-                <td>{formatDateOnly(r.startDate)} – {formatDateOnly(r.endDate)}</td>
-                <td>{r.totalDays}</td>
-                <td><StatusBadge status={r.status} /></td>
-                <td>
-                  {r.approverName ? `${r.approverName}: ` : ''}{r.approverComment ?? (r.status === 'PENDING' ? 'Awaiting decision' : '—')}
-                </td>
-                <td className="actions">
-                  {r.hasAttachment && <button type="button" onClick={() => handleAttachment(r.id)}>Attachment</button>}
-                  {canCancel(r) && <button type="button" className="danger" onClick={() => handleCancel(r)}>Cancel</button>}
-                </td>
-              </tr>
-            ))}
-            {history && history.content.length === 0 && <tr><td colSpan={6}>No leave requests yet.</td></tr>}
-          </tbody>
-        </table>
+        )}>
+        <DataTable columns={columns} rows={history ? history.content : null} rowKey={(r) => r.id}
+          rowClassName={(r) => (r.id === highlight ? 'highlight' : undefined)} emptyText="No leave requests yet." />
         {history && <Pager data={history} onPage={setPage} noun="requests" />}
-      </section>
+      </SectionCard>
     </main>
   )
 }

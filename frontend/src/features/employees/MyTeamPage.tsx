@@ -1,13 +1,31 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getTeam } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { PageResponse } from '../../types/auth'
 import type { Employee } from '../../types/employee'
 
 const PAGE_SIZE = 10
+
+const columns: Column<Employee>[] = [
+  { key: 'code', header: 'Code', render: (e) => e.employeeCode },
+  { key: 'name', header: 'Name', render: (e) => (
+    <Link to={`/employees/${e.id}`} className="person">
+      <AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span>
+    </Link>
+  ) },
+  { key: 'title', header: 'Job title', render: (e) => e.jobTitle },
+  { key: 'dept', header: 'Department', render: (e) => e.departmentName ?? '—' },
+  { key: 'status', header: 'Status', render: (e) => <StatusCodePill status={e.employmentStatus} /> },
+]
 
 export default function MyTeamPage() {
   const { user } = useAuth()
@@ -34,7 +52,7 @@ export default function MyTeamPage() {
   if (employeeId === null) {
     return (
       <main className="page">
-        <h1>My team</h1>
+        <PageHeader title="My team" description="The people who report to you." />
         <p>No employee record is linked to your login, so you have no direct reports.</p>
       </main>
     )
@@ -42,26 +60,12 @@ export default function MyTeamPage() {
 
   return (
     <main className="page">
-      <h1>My team</h1>
-      {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr><th>Code</th><th>Name</th><th>Job title</th><th>Department</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-          {data?.content.map((e) => (
-            <tr key={e.id}>
-              <td>{e.employeeCode}</td>
-              <td><Link to={`/employees/${e.id}`}>{e.fullName}</Link></td>
-              <td>{e.jobTitle}</td>
-              <td>{e.departmentName ?? '—'}</td>
-              <td>{e.employmentStatus}</td>
-            </tr>
-          ))}
-          {data && data.content.length === 0 && <tr><td colSpan={5}>You have no direct reports.</td></tr>}
-        </tbody>
-      </table>
-      {data && <Pager data={data} onPage={setPage} noun="reports" />}
+      <PageHeader title="My team" description="The people who report to you." />
+      <SectionCard title="Direct reports" icon={Users} tint="blue">
+        {error && <p className="error">{error}</p>}
+        <DataTable columns={columns} rows={data ? data.content : null} rowKey={(e) => e.id} emptyText="You have no direct reports." />
+        {data && <Pager data={data} onPage={setPage} noun="reports" />}
+      </SectionCard>
     </main>
   )
 }

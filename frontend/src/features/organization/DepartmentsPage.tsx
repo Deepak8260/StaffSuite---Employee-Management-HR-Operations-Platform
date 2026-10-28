@@ -1,4 +1,9 @@
+import { Building2, Plus } from 'lucide-react'
 import Flash from '../../components/Flash'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createDepartment, deleteDepartment, listDepartments, updateDepartment } from '../../api/organization'
@@ -75,12 +80,32 @@ export default function DepartmentsPage() {
     }
   }
 
+  const columns: Column<Department>[] = [
+    { key: 'name', header: 'Name', render: (d) => <span className="person-name">{d.name}</span> },
+    { key: 'desc', header: 'Description', render: (d) => d.description ?? '—' },
+    { key: 'count', header: 'Active employees', render: (d) => d.employeeCount },
+    { key: 'status', header: 'Status', render: (d) => (
+      <StatusPill tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Active' : 'Deleted'}</StatusPill>
+    ) },
+    { key: 'actions', header: '', align: 'right', render: (d) => (
+      <div className="row-actions">
+        {d.active ? (
+          <>
+            <button onClick={() => startEdit(d)}>Edit</button>
+            <button className="danger" onClick={() => handleDelete(d)}>Delete</button>
+          </>
+        ) : (
+          <button onClick={() => handleRestore(d)}>Restore</button>
+        )}
+      </div>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <h1>Departments</h1>
+      <PageHeader title="Departments" description="Create and maintain the company's departments." />
 
-      <section>
-        <h2>{editing ? `Edit "${editing.name}"` : 'New department'}</h2>
+      <SectionCard title={editing ? `Edit "${editing.name}"` : 'New department'} icon={Plus} tint="blue">
         <form onSubmit={handleSubmit} className="inline-form">
           <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required />
           <input
@@ -93,37 +118,15 @@ export default function DepartmentsPage() {
           <button type="submit">{editing ? 'Save' : 'Create'}</button>
           {editing && <button type="button" onClick={() => startEdit(null)}>Cancel</button>}
         </form>
-      </section>
+      </SectionCard>
 
       {error && <p className="error">{error}</p>}
       <Flash message={notice} onDone={() => setNotice(null)} />
 
-      <table>
-        <thead>
-          <tr><th>Name</th><th>Description</th><th>Active employees</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {departments.map((d) => (
-            <tr key={d.id} className={d.active ? undefined : 'muted'}>
-              <td>{d.name}</td>
-              <td>{d.description ?? '—'}</td>
-              <td>{d.employeeCount}</td>
-              <td>{d.active ? 'Active' : 'Deleted'}</td>
-              <td className="actions">
-                {d.active ? (
-                  <>
-                    <button onClick={() => startEdit(d)}>Edit</button>
-                    <button className="danger" onClick={() => handleDelete(d)}>Delete</button>
-                  </>
-                ) : (
-                  <button onClick={() => handleRestore(d)}>Restore</button>
-                )}
-              </td>
-            </tr>
-          ))}
-          {departments.length === 0 && <tr><td colSpan={5}>No departments yet. Create the first one above.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title="All departments" icon={Building2} tint="blue">
+        <DataTable columns={columns} rows={departments} rowKey={(d) => d.id}
+          rowClassName={(d) => (d.active ? undefined : 'muted')} emptyText="No departments yet. Create the first one above." />
+      </SectionCard>
     </main>
   )
 }

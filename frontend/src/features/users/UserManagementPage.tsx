@@ -1,6 +1,13 @@
+import { UserPlus, Users } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createUser, listUsers, updateUserRole, updateUserStatus } from '../../api/users'
+import Pager from '../../components/Pager'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import { ROLES, type PageResponse, type Role, type UserSummary } from '../../types/auth'
 
@@ -54,12 +61,39 @@ export default function UserManagementPage() {
     }
   }
 
+  const columns: Column<UserSummary>[] = [
+    { key: 'email', header: 'Email', render: (u) => (
+      <span className="person"><AvatarInitials name={u.email} size="sm" /><span className="person-name">{u.email}</span></span>
+    ) },
+    { key: 'role', header: 'Role', render: (u) => (
+      <select
+        value={u.role}
+        disabled={u.id === me?.userId}
+        onChange={(e) => run(() => updateUserRole(u.id, e.target.value as Role))}
+      >
+        {ROLES.map((r) => (
+          <option key={r}>{r}</option>
+        ))}
+      </select>
+    ) },
+    { key: 'status', header: 'Status', render: (u) => (
+      <StatusPill tone={u.active ? 'success' : 'neutral'}>{u.active ? 'Active' : 'Inactive'}</StatusPill>
+    ) },
+    { key: 'last', header: 'Last login', render: (u) => (u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '—') },
+    { key: 'actions', header: '', align: 'right', render: (u) => (
+      <div className="row-actions">
+        <button disabled={u.id === me?.userId} onClick={() => run(() => updateUserStatus(u.id, !u.active))}>
+          {u.active ? 'Deactivate' : 'Activate'}
+        </button>
+      </div>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <h1>User Management</h1>
+      <PageHeader title="User Management" description="Create logins, assign roles and activate or deactivate accounts." />
 
-      <section>
-        <h2>Create user</h2>
+      <SectionCard title="Create user" icon={UserPlus} tint="blue">
         <form onSubmit={handleCreate} className="inline-form">
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <input
@@ -78,64 +112,13 @@ export default function UserManagementPage() {
           <button type="submit">Create</button>
         </form>
         {createError && <p className="error">{createError}</p>}
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2>Users</h2>
+      <SectionCard title="Users" icon={Users} tint="blue">
         {error && <p className="error">{error}</p>}
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Last login</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.content.map((u) => {
-              const isSelf = u.id === me?.userId
-              return (
-                <tr key={u.id}>
-                  <td>{u.email}</td>
-                  <td>
-                    <select
-                      value={u.role}
-                      disabled={isSelf}
-                      onChange={(e) => run(() => updateUserRole(u.id, e.target.value as Role))}
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r}>{r}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>{u.active ? 'Active' : 'Inactive'}</td>
-                  <td>{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '—'}</td>
-                  <td>
-                    <button disabled={isSelf} onClick={() => run(() => updateUserStatus(u.id, !u.active))}>
-                      {u.active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        {data && (
-          <div className="pager">
-            <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-              Previous
-            </button>
-            <span>
-              Page {data.page + 1} of {Math.max(data.totalPages, 1)} ({data.totalElements} users)
-            </span>
-            <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(page + 1)}>
-              Next
-            </button>
-          </div>
-        )}
-      </section>
+        <DataTable columns={columns} rows={data ? data.content : null} rowKey={(u) => u.id} emptyText="No users found." />
+        {data && <Pager data={data} onPage={setPage} noun="users" />}
+      </SectionCard>
     </main>
   )
 }

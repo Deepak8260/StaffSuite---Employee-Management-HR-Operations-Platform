@@ -1,9 +1,4 @@
 body { margin: 0; font-family: system-ui, sans-serif; color: #1f2933; }
-.topbar { display: flex; gap: 1.5rem; align-items: center; padding: 0.75rem 1.5rem; background: #1f2933; color: #fff; }
-.topbar nav { display: flex; gap: 1rem; flex: 1; }
-.topbar a { color: #cbd2d9; text-decoration: none; }
-.topbar a:hover { color: #fff; }
-.topbar-user { display: flex; gap: 0.75rem; align-items: center; font-size: 0.9rem; }
 .page { padding: 2rem; }
 .page.narrow { max-width: 380px; margin: 3rem auto; }
 .form { display: flex; flex-direction: column; gap: 1rem; }
@@ -41,14 +36,6 @@ fieldset.wide { border: 1px solid #cbd2d9; border-radius: 4px; }
 .org-toggle.spacer { display: inline-block; }
 .org-meta { color: #52606d; font-size: 0.9rem; }
 
-/* nav dropdowns */
-.nav-menu { position: relative; }
-.nav-menu-button { background: none; border: 0; color: #cbd2d9; font-size: 1rem; padding: 0; cursor: pointer; }
-.nav-menu-button:hover { color: #fff; }
-.nav-menu-items { position: absolute; top: 2rem; left: 0; z-index: 20; background: #1f2933; border: 1px solid #3e4c59; border-radius: 4px; padding: 0.4rem 0; min-width: 11rem; display: flex; flex-direction: column; }
-.nav-menu-items a { padding: 0.45rem 1rem; white-space: nowrap; }
-.nav-menu-items a:hover { background: #323f4b; }
-.topbar nav { flex-wrap: wrap; row-gap: 0.4rem; }
 
 /* status badges */
 .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
@@ -115,7 +102,8 @@ textarea { padding: 0.5rem; font-size: 1rem; font-family: inherit; }
 .note { margin-top: 1rem; }
 .print-only { display: none; }
 @media print {
-  .topbar, .no-print { display: none !important; }
+  .topbar, .sidebar, .no-print { display: none !important; }
+  .app-main { margin-left: 0; }
   .print-only { display: block; }
   .page { padding: 0; }
   .holiday-table tr.upcoming td { background: none; }
@@ -347,5 +335,4 @@ tr.highlight td { background: #fff8d6; }
 /* tablet: keep the top bar and tables usable */
 @media (max-width: 900px) {
   .page { padding-left: 1rem; padding-right: 1rem; }
-  .page table { display: block; overflow-x: auto; }
 }

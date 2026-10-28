@@ -1,7 +1,10 @@
+import { UserPlus } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { createEmployee, getEmployee, updateEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useAuth } from '../../hooks/useAuth'
 import { useReferenceData } from '../../hooks/useReferenceData'
 import type { Role } from '../../types/auth'
@@ -124,12 +127,16 @@ export default function EmployeeFormPage() {
 
   return (
     <main className="page">
-      <h1>{editingId === null ? 'New employee' : 'Edit employee'}</h1>
+      <PageHeader
+        title={editingId === null ? 'New employee' : 'Edit employee'}
+        description={editingId === null ? 'Add a new person to the company.' : "Update this employee's details."}
+      />
       {departments.length === 0 && (
         <p className="error">
           No departments exist yet. <Link to="/admin/departments">Create a department</Link> first.
         </p>
       )}
+      <SectionCard title="Employee details" icon={UserPlus} tint="blue">
       <form onSubmit={handleSubmit} className="form grid">
         <label>Full name
           <input value={form.fullName} onChange={(e) => set('fullName', e.target.value)} maxLength={160} required />
@@ -210,6 +217,7 @@ export default function EmployeeFormPage() {
           <Link to={editingId === null ? '/employees' : `/employees/${editingId}`}>Cancel</Link>
         </div>
       </form>
+      </SectionCard>
     </main>
   )
 }

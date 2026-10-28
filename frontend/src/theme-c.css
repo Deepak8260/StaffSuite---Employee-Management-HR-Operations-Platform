@@ -1,0 +1,16 @@
+/* page-specific styles for the redesign (area c) */
+
+/* attendance */
+.today-section .today-card { border: 0; box-shadow: none; padding: 0; background: transparent; margin: 0; }
+.num-bad { color: #b9301f; font-weight: 700; }
+.data-table tr.total-row td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #dfe4ec; }
+.data-table td.row-actions { white-space: nowrap; }
+.data-table td.row-actions > * + * { margin-left: 0.4rem; }
+.section-head-right .actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.section-body .att-layout { margin-top: 0; }
+
+/* documents */
+.doc-groups { display: flex; flex-direction: column; gap: 1.25rem; }
+.doc-group-title { margin: 0 0 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+.doc-group-count { background: #eceff4; color: #4d586b; border-radius: 999px; padding: 0.05rem 0.55rem; font-size: 0.75rem; font-weight: 600; }
+.expiry-cell { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

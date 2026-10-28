@@ -1,8 +1,13 @@
+import { ClipboardCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { approveCorrection, listCorrections, rejectCorrection } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { PageResponse } from '../../types/auth'
 import { CORRECTION_STATUSES, type Correction, type CorrectionStatus } from '../../types/attendance'
@@ -75,56 +80,84 @@ export default function CorrectionsPanel({ scope }: Props) {
     }
   }
 
+  const columns: Column<Correction>[] = [
+    {
+      key: 'employee',
+      header: 'Employee',
+      render: (c) => (
+        <div className="person">
+          <AvatarInitials name={c.employeeName} size="sm" />
+          <div className="person-text">
+            <span className="person-name">{c.employeeName}</span>
+            <span className="person-meta">{c.employeeCode}</span>
+          </div>
+        </div>
+      ),
+    },
+    { key: 'date', header: 'Date', render: (c) => formatDateOnly(c.attendanceDate) },
+    { key: 'recorded', header: 'Recorded', render: (c) => <>{timeOf(c.currentCheckIn)} – {timeOf(c.currentCheckOut)}</> },
+    {
+      key: 'requested',
+      header: 'Requested',
+      render: (c) => (
+        <>
+          {c.requestedCheckIn ? `In ${timeOf(c.requestedCheckIn)}` : ''}
+          {c.requestedCheckIn && c.requestedCheckOut ? ' · ' : ''}
+          {c.requestedCheckOut ? `Out ${timeOf(c.requestedCheckOut)}` : ''}
+        </>
+      ),
+    },
+    { key: 'reason', header: 'Reason', render: (c) => c.reason },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (c) => (
+        <>
+          <StatusCodePill status={c.status} />
+          {c.status !== 'PENDING' && c.reviewComment && (
+            <div className="hint">{c.reviewedByName ? `${c.reviewedByName}: ` : ''}{c.reviewComment}</div>
+          )}
+        </>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      className: 'row-actions',
+      render: (c) => {
+        // The backend refuses self-decisions, so the buttons are not offered on your own requests.
+        const own = c.employeeId === user?.employeeId
+        return (
+          <>
+            {c.status === 'PENDING' && !own && (
+              <>
+                <button type="button" onClick={() => open(c, 'approve')}>Approve</button>
+                <button type="button" className="danger" onClick={() => open(c, 'reject')}>Reject</button>
+              </>
+            )}
+            {c.status === 'PENDING' && own && <span className="hint">Your own request</span>}
+          </>
+        )
+      },
+    },
+  ]
+
   return (
-    <section>
-      <div className="page-head">
-        <h2>Correction requests</h2>
+    <SectionCard
+      title="Correction requests"
+      icon={ClipboardCheck}
+      tint="orange"
+      actions={
         <select value={status} onChange={(e) => { setStatus(e.target.value as CorrectionStatus | ''); setPage(0) }}>
           <option value="">All statuses</option>
           {CORRECTION_STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
-      </div>
+      }
+    >
       {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr><th>Employee</th><th>Date</th><th>Recorded</th><th>Requested</th><th>Reason</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {data?.content.map((c) => {
-            // The backend refuses self-decisions, so the buttons are not offered on your own requests.
-            const own = c.employeeId === user?.employeeId
-            return (
-              <tr key={c.id} className={c.id === highlight ? 'highlight' : undefined}>
-                <td>{c.employeeName}<br /><span className="hint">{c.employeeCode}</span></td>
-                <td>{formatDateOnly(c.attendanceDate)}</td>
-                <td>{timeOf(c.currentCheckIn)} – {timeOf(c.currentCheckOut)}</td>
-                <td>
-                  {c.requestedCheckIn ? `In ${timeOf(c.requestedCheckIn)}` : ''}
-                  {c.requestedCheckIn && c.requestedCheckOut ? ' · ' : ''}
-                  {c.requestedCheckOut ? `Out ${timeOf(c.requestedCheckOut)}` : ''}
-                </td>
-                <td>{c.reason}</td>
-                <td>
-                  <span className={`badge ${c.status.toLowerCase()}`}>{c.status}</span>
-                  {c.status !== 'PENDING' && c.reviewComment && (
-                    <div className="hint">{c.reviewedByName ? `${c.reviewedByName}: ` : ''}{c.reviewComment}</div>
-                  )}
-                </td>
-                <td className="actions">
-                  {c.status === 'PENDING' && !own && (
-                    <>
-                      <button type="button" onClick={() => open(c, 'approve')}>Approve</button>
-                      <button type="button" className="danger" onClick={() => open(c, 'reject')}>Reject</button>
-                    </>
-                  )}
-                  {c.status === 'PENDING' && own && <span className="hint">Your own request</span>}
-                </td>
-              </tr>
-            )
-          })}
-          {data && data.content.length === 0 && <tr><td colSpan={7}>No correction requests found.</td></tr>}
-        </tbody>
-      </table>
+      <DataTable columns={columns} rows={data ? data.content : null} rowKey={(c) => c.id}
+        rowClassName={(c) => (c.id === highlight ? 'highlight' : undefined)} emptyText="No correction requests found." />
       {data && <Pager data={data} onPage={setPage} noun="requests" />}
 
       {decision && (
@@ -152,6 +185,6 @@ export default function CorrectionsPanel({ scope }: Props) {
           </div>
         </div>
       )}
-    </section>
+    </SectionCard>
   )
 }

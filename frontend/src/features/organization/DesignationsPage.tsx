@@ -1,6 +1,11 @@
+import { BadgeCheck, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createDesignation, listDepartments, listDesignations, updateDesignation } from '../../api/organization'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import type { Department, Designation } from '../../types/organization'
 
 export default function DesignationsPage() {
@@ -67,12 +72,32 @@ export default function DesignationsPage() {
     }
   }
 
+  const columns: Column<Designation>[] = [
+    { key: 'title', header: 'Title', render: (d) => <span className="person-name">{d.title}</span> },
+    { key: 'dept', header: 'Department', render: (d) => d.departmentName ?? '—' },
+    { key: 'desc', header: 'Description', render: (d) => d.description ?? '—' },
+    { key: 'status', header: 'Status', render: (d) => (
+      <StatusPill tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Active' : 'Inactive'}</StatusPill>
+    ) },
+    { key: 'actions', header: '', align: 'right', render: (d) => (
+      <div className="row-actions">
+        {d.active ? (
+          <>
+            <button onClick={() => startEdit(d)}>Edit</button>
+            <button onClick={() => setActive(d, false)}>Deactivate</button>
+          </>
+        ) : (
+          <button onClick={() => setActive(d, true)}>Restore</button>
+        )}
+      </div>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <h1>Designations</h1>
+      <PageHeader title="Designations" description="Job designations and the departments they belong to." />
 
-      <section>
-        <h2>{editing ? `Edit "${editing.title}"` : 'New designation'}</h2>
+      <SectionCard title={editing ? `Edit "${editing.title}"` : 'New designation'} icon={Plus} tint="blue">
         <form onSubmit={handleSubmit} className="inline-form">
           <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} required />
           <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
@@ -89,36 +114,14 @@ export default function DesignationsPage() {
           <button type="submit">{editing ? 'Save' : 'Create'}</button>
           {editing && <button type="button" onClick={() => startEdit(null)}>Cancel</button>}
         </form>
-      </section>
+      </SectionCard>
 
       {error && <p className="error">{error}</p>}
 
-      <table>
-        <thead>
-          <tr><th>Title</th><th>Department</th><th>Description</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {designations.map((d) => (
-            <tr key={d.id} className={d.active ? undefined : 'muted'}>
-              <td>{d.title}</td>
-              <td>{d.departmentName ?? '—'}</td>
-              <td>{d.description ?? '—'}</td>
-              <td>{d.active ? 'Active' : 'Inactive'}</td>
-              <td className="actions">
-                {d.active ? (
-                  <>
-                    <button onClick={() => startEdit(d)}>Edit</button>
-                    <button onClick={() => setActive(d, false)}>Deactivate</button>
-                  </>
-                ) : (
-                  <button onClick={() => setActive(d, true)}>Restore</button>
-                )}
-              </td>
-            </tr>
-          ))}
-          {designations.length === 0 && <tr><td colSpan={5}>No designations yet. Create the first one above.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title="All designations" icon={BadgeCheck} tint="blue">
+        <DataTable columns={columns} rows={designations} rowKey={(d) => d.id}
+          rowClassName={(d) => (d.active ? undefined : 'muted')} emptyText="No designations yet. Create the first one above." />
+      </SectionCard>
     </main>
   )
 }

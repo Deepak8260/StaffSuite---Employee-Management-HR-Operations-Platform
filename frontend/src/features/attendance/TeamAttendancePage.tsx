@@ -1,7 +1,11 @@
+import { CalendarRange, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getAttendanceDays, getAttendanceSummary } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
-import AttendanceBadge from '../../components/AttendanceBadge'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import type { AttendanceDay, AttendanceSummary, SummaryRow } from '../../types/attendance'
 import { formatDateOnly, fromISO, toISO } from '../../utils/dates'
 import { hoursText, timeOf } from '../../utils/time'
@@ -43,19 +47,33 @@ export default function TeamAttendancePage() {
     }
   }
 
+  const dayColumns: Column<AttendanceDay>[] = [
+    { key: 'date', header: 'Date', render: (d) => formatDateOnly(d.date) },
+    { key: 'day', header: 'Day', render: (d) => fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' }) },
+    { key: 'status', header: 'Status', render: (d) => (d.status ? <StatusCodePill status={d.status} /> : <span className="hint">—</span>) },
+    { key: 'in', header: 'In', render: (d) => timeOf(d.checkInTime) },
+    { key: 'out', header: 'Out', render: (d) => timeOf(d.checkOutTime) },
+    { key: 'hours', header: 'Hours', render: (d) => hoursText(d.workingHours) },
+  ]
+
   return (
     <main className="page">
-      <h1>Team attendance</h1>
-      <p className="hint">Your direct reports only. Days with approved leave count as On leave, not Absent.</p>
-      <div className="inline-form filters">
-        <label className="check">From <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} /></label>
-        <label className="check">To <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} /></label>
-      </div>
+      <PageHeader title="Team attendance" description="Your direct reports only. Days with approved leave count as On leave, not Absent." />
+      <SectionCard title="Date range" icon={CalendarRange} tint="green">
+        <div className="inline-form filters">
+          <label className="check">From <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} /></label>
+          <label className="check">To <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} /></label>
+        </div>
+      </SectionCard>
       {to < from && <p className="error">The end date cannot be before the start date.</p>}
       {error && <p className="error">{error}</p>}
-      {summary && (
-        <SummaryTable summary={summary} action={(row) => <button type="button" onClick={() => viewDays(row)}>View days</button>} />
-      )}
+      <SectionCard title="Team summary" icon={Users} tint="green">
+        {summary ? (
+          <SummaryTable summary={summary} action={(row) => <button type="button" onClick={() => viewDays(row)}>View days</button>} />
+        ) : (
+          <p className="hint">Loading…</p>
+        )}
+      </SectionCard>
 
       <CorrectionsPanel scope="TEAM" />
 
@@ -65,23 +83,7 @@ export default function TeamAttendancePage() {
             <h2>{detail.row.label}</h2>
             <p className="hint">{formatDateOnly(from)} – {formatDateOnly(to)}</p>
             <div className="modal-scroll">
-              <table>
-                <thead>
-                  <tr><th>Date</th><th>Day</th><th>Status</th><th>In</th><th>Out</th><th>Hours</th></tr>
-                </thead>
-                <tbody>
-                  {detail.days.filter((d) => d.status !== null || d.checkInTime).map((d) => (
-                    <tr key={d.date}>
-                      <td>{formatDateOnly(d.date)}</td>
-                      <td>{fromISO(d.date).toLocaleDateString(undefined, { weekday: 'short' })}</td>
-                      <td><AttendanceBadge status={d.status} /></td>
-                      <td>{timeOf(d.checkInTime)}</td>
-                      <td>{timeOf(d.checkOutTime)}</td>
-                      <td>{hoursText(d.workingHours)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <DataTable columns={dayColumns} rows={detail.days.filter((d) => d.status !== null || d.checkInTime)} rowKey={(d) => d.date} />
             </div>
             <div className="actions"><button onClick={() => setDetail(null)}>Close</button></div>
           </div>

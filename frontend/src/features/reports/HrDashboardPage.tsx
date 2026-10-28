@@ -1,4 +1,4 @@
-import ExpiringDocumentsWidget from '../documents/ExpiringDocumentsWidget'
+import PageHeader from '../../components/ui/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { listDepartments } from '../../api/organization'
 import { downloadReportCsv, getAttendanceTrend, getHeadcount, getLeaveUtilization, getOnboarding } from '../../api/reports'
@@ -142,7 +142,7 @@ export default function HrDashboardPage() {
 
   return (
     <main className="page viz-root dashboard">
-      <h1>HR dashboard</h1>
+      <PageHeader title="HR analytics" description="Headcount, attendance, leave and hiring across the company, with one set of filters." />
 
       {/* the one filter row: it scopes every widget below */}
       <div className="viz-filters" role="group" aria-label="Dashboard filters">
@@ -359,7 +359,6 @@ export default function HrDashboardPage() {
           />
         </div>
       </div>
-      <ExpiringDocumentsWidget />
     </main>
   )
 }

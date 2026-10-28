@@ -4,6 +4,7 @@ import type { AppConfig } from '../types/config'
 // The real value comes from /config.js at runtime.
 const DEFAULTS: AppConfig = {
   API_BASE_URL: '',
+  APP_ENV_LABEL: '',
 }
 
 export function getConfig(): AppConfig {

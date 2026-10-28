@@ -1,9 +1,14 @@
+import { ClipboardCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { approveLeave, listLeaveRequests, openAttachment, rejectLeave } from '../../api/leave'
 import Pager from '../../components/Pager'
-import StatusBadge from '../../components/StatusBadge'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import type { PageResponse } from '../../types/auth'
 import { LEAVE_STATUSES, type LeaveRequest, type LeaveScope, type LeaveStatus } from '../../types/leave'
@@ -83,57 +88,62 @@ export default function LeaveApprovalsPage({ scope }: Props) {
     }
   }
 
+  const columns: Column<LeaveRequest>[] = [
+    { key: 'employee', header: 'Employee', render: (r) => (
+      <span className="person"><AvatarInitials name={r.employeeName} size="sm" />
+        <span><span className="person-name">{r.employeeName}</span><br /><span className="person-meta">{r.employeeCode}</span></span></span>
+    ) },
+    { key: 'type', header: 'Type', render: (r) => r.leaveTypeName },
+    { key: 'dates', header: 'Dates', render: (r) => `${formatDateOnly(r.startDate)} – ${formatDateOnly(r.endDate)}` },
+    { key: 'days', header: 'Days', render: (r) => r.totalDays },
+    { key: 'reason', header: 'Reason', render: (r) => r.reason ?? '—' },
+    { key: 'status', header: 'Status', render: (r) => (
+      <>
+        <StatusCodePill status={r.status} />
+        {r.status !== 'PENDING' && r.approverComment && <div className="hint">{r.approverName ? `${r.approverName}: ` : ''}{r.approverComment}</div>}
+      </>
+    ) },
+    { key: 'actions', header: '', align: 'right', render: (r) => {
+      // The backend refuses self-approval, so the buttons are not offered for your own requests.
+      const own = r.employeeId === user?.employeeId
+      return (
+        <span className="actions">
+          {r.hasAttachment && <button type="button" onClick={() => handleAttachment(r.id)}>Attachment</button>}
+          {r.status === 'PENDING' && !own && (
+            <>
+              <button type="button" onClick={() => open(r, 'approve')}>Approve</button>
+              <button type="button" className="danger" onClick={() => open(r, 'reject')}>Reject</button>
+            </>
+          )}
+          {r.status === 'PENDING' && own && <span className="hint">Your own request</span>}
+        </span>
+      )
+    } },
+  ]
+
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>{scope === 'TEAM' ? 'Team leave requests' : 'All leave requests'}</h1>
-        <div className="actions">
-          {/* the ALL view is only reachable by HR/Admin, who are the ones who manage leave types */}
-          {scope === 'ALL' && <Link to="/admin/leave-types" className="button">Manage leave types</Link>}
-          <select value={status} onChange={(e) => { setStatus(e.target.value as LeaveStatus | ''); setPage(0) }}>
-            <option value="">All statuses</option>
-            {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}
-          </select>
-        </div>
-      </div>
+      <PageHeader
+        title={scope === 'TEAM' ? 'Team leave requests' : 'All leave requests'}
+        description={scope === 'TEAM' ? 'Review leave requests from your direct reports.' : 'Review leave requests across the organisation.'}
+        actions={(
+          <>
+            {/* the ALL view is only reachable by HR/Admin, who are the ones who manage leave types */}
+            {scope === 'ALL' && <Link to="/admin/leave-types" className="button">Manage leave types</Link>}
+            <select value={status} onChange={(e) => { setStatus(e.target.value as LeaveStatus | ''); setPage(0) }}>
+              <option value="">All statuses</option>
+              {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </>
+        )}
+      />
       {error && <p className="error">{error}</p>}
 
-      <table>
-        <thead>
-          <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {data?.content.map((r) => {
-            // The backend refuses self-approval, so the buttons are not offered for your own requests.
-            const own = r.employeeId === user?.employeeId
-            return (
-              <tr key={r.id} className={r.id === highlight ? 'highlight' : undefined}>
-                <td>{r.employeeName}<br /><span className="hint">{r.employeeCode}</span></td>
-                <td>{r.leaveTypeName}</td>
-                <td>{formatDateOnly(r.startDate)} – {formatDateOnly(r.endDate)}</td>
-                <td>{r.totalDays}</td>
-                <td>{r.reason ?? '—'}</td>
-                <td>
-                  <StatusBadge status={r.status} />
-                  {r.status !== 'PENDING' && r.approverComment && <div className="hint">{r.approverName ? `${r.approverName}: ` : ''}{r.approverComment}</div>}
-                </td>
-                <td className="actions">
-                  {r.hasAttachment && <button type="button" onClick={() => handleAttachment(r.id)}>Attachment</button>}
-                  {r.status === 'PENDING' && !own && (
-                    <>
-                      <button type="button" onClick={() => open(r, 'approve')}>Approve</button>
-                      <button type="button" className="danger" onClick={() => open(r, 'reject')}>Reject</button>
-                    </>
-                  )}
-                  {r.status === 'PENDING' && own && <span className="hint">Your own request</span>}
-                </td>
-              </tr>
-            )
-          })}
-          {data && data.content.length === 0 && <tr><td colSpan={7}>No leave requests found.</td></tr>}
-        </tbody>
-      </table>
-      {data && <Pager data={data} onPage={setPage} noun="requests" />}
+      <SectionCard title="Requests" icon={ClipboardCheck} tint="orange">
+        <DataTable columns={columns} rows={data ? data.content : null} rowKey={(r) => r.id}
+          rowClassName={(r) => (r.id === highlight ? 'highlight' : undefined)} emptyText="No leave requests found." />
+        {data && <Pager data={data} onPage={setPage} noun="requests" />}
+      </SectionCard>
 
       {decision && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">

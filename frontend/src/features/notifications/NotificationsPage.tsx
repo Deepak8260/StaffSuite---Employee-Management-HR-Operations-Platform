@@ -1,8 +1,11 @@
+import { Bell } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../../api/notifications'
 import Pager from '../../components/Pager'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useAuth } from '../../hooks/useAuth'
 import type { PageResponse } from '../../types/auth'
 import type { NotificationItem } from '../../types/notifications'
@@ -63,9 +66,9 @@ export default function NotificationsPage() {
 
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>Notifications</h1>
-        <div className="actions">
+      <PageHeader title="Notifications" description="Updates about your leave, approvals and documents."
+        actions={(
+          <>
           <div className="segmented" role="group" aria-label="Filter">
             <button type="button" className={!unreadOnly ? 'on' : ''} onClick={() => { setUnreadOnly(false); setPage(0) }}>All</button>
             <button type="button" className={unreadOnly ? 'on' : ''} onClick={() => { setUnreadOnly(true); setPage(0) }}>Unread</button>
@@ -73,10 +76,11 @@ export default function NotificationsPage() {
           <button type="button" onClick={readAll} disabled={busy || (!unreadOnly && unreadHere === 0 && data?.totalElements === 0)}>
             Mark all as read
           </button>
-        </div>
-      </div>
+          </>
+        )} />
       {error && <p className="error">{error}</p>}
 
+      <SectionCard title="Inbox" icon={Bell} tint="blue">
       <ul className="notif-list">
         {data?.content.map((n) => (
           <li key={n.id}>
@@ -95,6 +99,7 @@ export default function NotificationsPage() {
         )}
       </ul>
       {data && <Pager data={data} onPage={setPage} noun="notifications" />}
+      </SectionCard>
     </main>
   )
 }

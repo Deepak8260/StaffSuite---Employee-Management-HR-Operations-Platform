@@ -1,6 +1,11 @@
+import { CalendarPlus, PartyPopper } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createHoliday, deleteHoliday, listHolidays, updateHoliday } from '../../api/leave'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import type { Holiday } from '../../types/leave'
 import { fromISO } from '../../utils/dates'
 
@@ -61,19 +66,31 @@ export default function HolidaysPage() {
     }
   }
 
+  const columns: Column<Holiday>[] = [
+    { key: 'date', header: 'Date', render: (h) => fromISO(h.holidayDate).toLocaleDateString() },
+    { key: 'day', header: 'Day', render: (h) => fromISO(h.holidayDate).toLocaleDateString(undefined, { weekday: 'long' }) },
+    { key: 'name', header: 'Name', render: (h) => h.name },
+    { key: 'type', header: 'Type', render: (h) => <StatusPill tone={h.optional ? 'info' : 'success'}>{h.optional ? 'Optional' : 'Public holiday'}</StatusPill> },
+    { key: 'actions', header: '', align: 'right', render: (h) => (
+      <span className="actions">
+        <button onClick={() => startEdit(h)}>Edit</button>
+        <button className="danger" onClick={() => handleDelete(h)}>Delete</button>
+      </span>
+    ) },
+  ]
+
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>Public holidays</h1>
-        <div className="actions">
-          <button onClick={() => setYear(year - 1)}>‹</button>
-          <strong>{year}</strong>
-          <button onClick={() => setYear(year + 1)}>›</button>
-        </div>
-      </div>
+      <PageHeader title="Public holidays" description="Maintain the company holiday list for each year."
+        actions={(
+          <>
+            <button onClick={() => setYear(year - 1)}>‹</button>
+            <strong>{year}</strong>
+            <button onClick={() => setYear(year + 1)}>›</button>
+          </>
+        )} />
 
-      <section>
-        <h2>{editing ? `Edit "${editing.name}"` : 'New holiday'}</h2>
+      <SectionCard title={editing ? `Edit "${editing.name}"` : 'New holiday'} icon={CalendarPlus} tint="orange">
         <form onSubmit={handleSubmit} className="inline-form">
           <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} required />
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
@@ -87,29 +104,12 @@ export default function HolidaysPage() {
         <p className="hint">
           Holidays added or removed later do not change days already counted on existing leave requests.
         </p>
-      </section>
+      </SectionCard>
 
       {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Day</th><th>Name</th><th>Type</th><th></th></tr>
-        </thead>
-        <tbody>
-          {holidays.map((h) => (
-            <tr key={h.id}>
-              <td>{fromISO(h.holidayDate).toLocaleDateString()}</td>
-              <td>{fromISO(h.holidayDate).toLocaleDateString(undefined, { weekday: 'long' })}</td>
-              <td>{h.name}</td>
-              <td>{h.optional ? 'Optional' : 'Public holiday'}</td>
-              <td className="actions">
-                <button onClick={() => startEdit(h)}>Edit</button>
-                <button className="danger" onClick={() => handleDelete(h)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-          {holidays.length === 0 && <tr><td colSpan={5}>No holidays defined for {year}.</td></tr>}
-        </tbody>
-      </table>
+      <SectionCard title={`Holidays in ${year}`} icon={PartyPopper} tint="orange">
+        <DataTable columns={columns} rows={holidays} rowKey={(h) => h.id} emptyText={`No holidays defined for ${year}.`} />
+      </SectionCard>
     </main>
   )
 }

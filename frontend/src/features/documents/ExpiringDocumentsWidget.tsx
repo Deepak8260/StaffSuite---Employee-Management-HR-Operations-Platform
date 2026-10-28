@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { FileWarning } from 'lucide-react'
 import { listExpiringDocuments } from '../../api/documents'
-import ExpiryBadge from '../../components/ExpiryBadge'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill from '../../components/ui/StatusPill'
 import type { EmployeeDocument } from '../../types/documents'
+import ExpiryPill from './ExpiryPill'
 
 const SHOWN = 5
 
@@ -18,30 +20,26 @@ export default function ExpiringDocumentsWidget() {
   const expired = documents.filter((d) => d.expired).length
 
   return (
-    <section className="widget">
-      <div className="page-head">
-        <h2>Documents needing attention</h2>
-        <Link to="/admin/documents/expiring">View all</Link>
-      </div>
+    <SectionCard title="Documents needing attention" icon={FileWarning} tint="purple" viewAllTo="/admin/documents/expiring">
       {documents.length === 0 ? (
         <p className="hint">No documents are expired or expiring soon.</p>
       ) : (
         <>
           <p>
             <strong>{documents.length}</strong> document{documents.length === 1 ? '' : 's'}
-            {expired > 0 && <> · <span className="expiry expired">{expired} expired</span></>}
+            {expired > 0 && <> · <StatusPill tone="danger">{expired} expired</StatusPill></>}
           </p>
           <ul className="widget-list">
             {documents.slice(0, SHOWN).map((d) => (
               <li key={d.id}>
                 <span>{d.employeeName} · {d.categoryName}</span>
-                <ExpiryBadge expiryDate={d.expiryDate} daysRemaining={d.daysRemaining} />
+                <ExpiryPill expiryDate={d.expiryDate} daysRemaining={d.daysRemaining} />
               </li>
             ))}
           </ul>
           {documents.length > SHOWN && <p className="hint">and {documents.length - SHOWN} more</p>}
         </>
       )}
-    </section>
+    </SectionCard>
   )
 }

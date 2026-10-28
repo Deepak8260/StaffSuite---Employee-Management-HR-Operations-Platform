@@ -1,4 +1,8 @@
+import { Phone, UserRound } from 'lucide-react'
 import Flash from '../../components/Flash'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
 import { useEffect, useState, type FormEvent } from 'react'
 import { getEmployee, updateOwnProfile } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
@@ -49,7 +53,7 @@ export default function MyProfilePage() {
   if (employeeId === null) {
     return (
       <main className="page">
-        <h1>My profile</h1>
+        <PageHeader title="My profile" description="Your personal and job details." />
         <p>No employee record is linked to your login, so there is no profile to show.</p>
       </main>
     )
@@ -57,12 +61,21 @@ export default function MyProfilePage() {
 
   return (
     <main className="page">
-      <h1>My profile</h1>
+      <PageHeader title="My profile" description="Your personal and job details." />
       {error && !employee && <p className="error">{error}</p>}
       {employee && (
         <>
-          <EmployeeFields employee={employee} />
-          <h2>Contact details</h2>
+          <SectionCard title={employee.fullName} icon={UserRound} tint="blue">
+            <div className="person profile-id">
+              <AvatarInitials name={employee.fullName} size="lg" />
+              <div className="person-text">
+                <span className="person-name">{employee.fullName}</span>
+                <span className="person-meta">{employee.jobTitle}</span>
+              </div>
+            </div>
+            <EmployeeFields employee={employee} />
+          </SectionCard>
+          <SectionCard title="Contact details" icon={Phone} tint="green">
           <p className="hint">You can update these fields. Everything else is managed by HR.</p>
           <form onSubmit={handleSubmit} className="form narrow-form">
             <label>Phone
@@ -78,6 +91,7 @@ export default function MyProfilePage() {
             <Flash message={saved ? 'Profile updated.' : null} onDone={() => setSaved(false)} />
             <button type="submit" disabled={busy}>Save changes</button>
           </form>
+          </SectionCard>
         </>
       )}
     </main>

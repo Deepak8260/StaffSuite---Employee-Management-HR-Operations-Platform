@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
@@ -126,11 +127,7 @@ export default function NotificationBell() {
     <div className="bell" ref={ref}>
       <button type="button" className="bell-button" onClick={toggle} aria-expanded={open}
         aria-label={count > 0 ? `Notifications, ${count} unread` : 'Notifications'}>
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-        </svg>
+        <Bell size={20} aria-hidden="true" />
         {count > 0 && <span className="bell-badge">{count > 99 ? '99+' : count}</span>}
       </button>
 

@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { Plus, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { listEmployees } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
+import AvatarInitials from '../../components/ui/AvatarInitials'
+import DataTable, { type Column } from '../../components/ui/DataTable'
+import PageHeader from '../../components/ui/PageHeader'
+import SectionCard from '../../components/ui/SectionCard'
+import StatusPill, { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
 import { useReferenceData } from '../../hooks/useReferenceData'
 import type { PageResponse } from '../../types/auth'
@@ -10,6 +16,24 @@ import { ALL_STATUSES, type Employee, type EmployeeFilters, type EmploymentStatu
 import { canManageEmployees } from '../../utils/roles'
 
 const PAGE_SIZE = 10
+
+const columns: Column<Employee>[] = [
+  { key: 'code', header: 'Code', render: (e) => e.employeeCode },
+  { key: 'name', header: 'Name', render: (e) => (
+    <Link to={`/employees/${e.id}`} className="person">
+      <AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span>
+    </Link>
+  ) },
+  { key: 'title', header: 'Job title', render: (e) => e.jobTitle },
+  { key: 'dept', header: 'Department', render: (e) => e.departmentName ?? '—' },
+  { key: 'mgr', header: 'Manager', render: (e) => e.managerName ?? '—' },
+  { key: 'status', header: 'Status', render: (e) => (
+    <>
+      <StatusCodePill status={e.employmentStatus} />
+      {e.deleted && <> <StatusPill tone="neutral">Offboarded</StatusPill></>}
+    </>
+  ) },
+]
 
 export default function EmployeeListPage() {
   const { user } = useAuth()
@@ -66,72 +90,52 @@ export default function EmployeeListPage() {
 
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>{canManage ? 'Employees' : 'My team'}</h1>
-        {canManage && <Link to="/employees/new" className="button">+ New employee</Link>}
-      </div>
+      <PageHeader
+        title={canManage ? 'Employees' : 'My team'}
+        description={canManage ? 'Search, filter and manage everyone in the company.' : 'People on your team.'}
+        actions={canManage && <Link to="/employees/new" className="button"><Plus size={16} aria-hidden="true" /> New employee</Link>}
+      />
 
-      <form onSubmit={applyFilters} className="inline-form filters">
-        <input placeholder="Search name or code" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
-          <option value="">All departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>{d.name}</option>
-          ))}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">All statuses</option>
-          {ALL_STATUSES.filter((s) => canManage || s !== 'TERMINATED').map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
-        {canManage && (
-          <select value={managerId} onChange={(e) => setManagerId(e.target.value)}>
-            <option value="">Any manager</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+      <SectionCard title="Filters" icon={Users} tint="blue">
+        <form onSubmit={applyFilters} className="inline-form filters">
+          <input placeholder="Search name or code" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+            <option value="">All departments</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
-        )}
-        {canManage && (
-          <label className="check">
-            <input type="checkbox" checked={includeOffboarded} onChange={(e) => setIncludeOffboarded(e.target.checked)} />
-            Include offboarded
-          </label>
-        )}
-        <button type="submit">Apply</button>
-        <button type="button" onClick={reset}>Reset</button>
-      </form>
-
-      {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Job title</th>
-            <th>Department</th>
-            <th>Manager</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.content.map((e) => (
-            <tr key={e.id} className={e.deleted ? 'muted' : undefined}>
-              <td>{e.employeeCode}</td>
-              <td><Link to={`/employees/${e.id}`}>{e.fullName}</Link></td>
-              <td>{e.jobTitle}</td>
-              <td>{e.departmentName ?? '—'}</td>
-              <td>{e.managerName ?? '—'}</td>
-              <td>{e.employmentStatus}{e.deleted ? ' (offboarded)' : ''}</td>
-            </tr>
-          ))}
-          {data && data.content.length === 0 && (
-            <tr><td colSpan={6}>No employees found.</td></tr>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">All statuses</option>
+            {ALL_STATUSES.filter((s) => canManage || s !== 'TERMINATED').map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+          {canManage && (
+            <select value={managerId} onChange={(e) => setManagerId(e.target.value)}>
+              <option value="">Any manager</option>
+              {people.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
           )}
-        </tbody>
-      </table>
-      {data && <Pager data={data} onPage={setPage} noun="employees" />}
+          {canManage && (
+            <label className="check">
+              <input type="checkbox" checked={includeOffboarded} onChange={(e) => setIncludeOffboarded(e.target.checked)} />
+              Include offboarded
+            </label>
+          )}
+          <button type="submit">Apply</button>
+          <button type="button" onClick={reset}>Reset</button>
+        </form>
+      </SectionCard>
+
+      <SectionCard title="Employees" icon={Users} tint="blue">
+        {error && <p className="error">{error}</p>}
+        <DataTable columns={columns} rows={data ? data.content : null} rowKey={(e) => e.id}
+          rowClassName={(e) => (e.deleted ? 'muted' : undefined)} emptyText="No employees found." />
+        {data && <Pager data={data} onPage={setPage} noun="employees" />}
+      </SectionCard>
     </main>
   )
 }
