@@ -33,16 +33,16 @@ a { color: var(--primary); }
 /* ------------------------------------------------------------------ shell */
 .app-shell { min-height: 100vh; }
 .sidebar { box-sizing: border-box; position: fixed; inset: 0 auto 0 0; width: var(--sidebar-w); background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; z-index: 40; transition: width 0.15s; }
-.brand { display: flex; align-items: center; height: var(--bar-h); box-sizing: border-box; padding: 0 1.25rem; border-bottom: 1px solid var(--border); flex: none; }
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; height: var(--bar-h); box-sizing: border-box; padding: 0 1rem 0 1.25rem; border-bottom: 1px solid var(--border); flex: none; }
 .brand-name { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; }
 .brand-name b { color: var(--primary); font-weight: 800; }
-.sidebar-nav { display: flex; flex-direction: column; padding: 0.6rem 0 0.8rem; flex: 1; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.75rem 0 0.8rem; flex: 1; }
 .side-spacer { flex: 1; }
 .side-rule { height: 1px; background: var(--border); margin: 0.6rem 1.25rem; }
-.side-link { position: relative; display: flex; align-items: center; gap: 0.85rem; padding: 0.7rem 1.25rem; box-sizing: border-box; color: #344054; text-decoration: none; font-weight: 500; font-size: 0.95rem; background: none; border: 0; border-radius: 0; width: 100%; text-align: left; font-family: inherit; cursor: pointer; }
+.side-link { position: relative; display: flex; align-items: center; gap: 0.85rem; margin: 0 0.75rem; padding: 0.65rem 0.9rem; box-sizing: border-box; color: #344054; text-decoration: none; font-weight: 500; font-size: 0.95rem; background: none; border: 0; border-radius: 10px; width: calc(100% - 1.5rem); text-align: left; font-family: inherit; cursor: pointer; }
 .side-link:hover { background: #f5f7fb; }
 .side-link .ico { flex: none; }
-.side-link.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; box-shadow: inset 3px 0 0 var(--primary); }
+.side-link.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
 .ico-blue { color: var(--primary); }
 .ico-green { color: #16a36a; }
 .ico-orange { color: #f2711c; }
@@ -50,13 +50,12 @@ a { color: var(--primary); }
 .side-group-button .chevron { margin-left: auto; color: #667085; }
 .side-group-button.has-active { color: var(--primary); }
 .side-sub { display: flex; flex-direction: column; padding: 0.15rem 0 0.35rem; }
-.side-sublink { padding: 0.5rem 1.25rem 0.5rem 3.4rem; color: #475467; text-decoration: none; font-size: 0.9rem; }
+.side-sublink { margin: 0 0.75rem; border-radius: 8px; padding: 0.5rem 0.9rem 0.5rem 3.1rem; color: #475467; text-decoration: none; font-size: 0.9rem; }
 .side-sublink:hover { background: #f5f7fb; }
 .side-sublink.active { color: var(--primary); font-weight: 600; background: var(--primary-soft); }
-.side-tools { display: flex; justify-content: flex-end; padding: 0.15rem 0.9rem 0.45rem; }
 .collapse-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem; background: #fff; border: 1px solid #c9d3e6; border-radius: 8px; color: #344054; line-height: 0; }
 .collapse-btn:hover { background: #f5f7fb; }
-.collapse-btn::after { content: attr(data-tip); position: absolute; top: calc(100% + 0.35rem); right: 0; background: #1f2937; color: #fff; font-size: 0.75rem; font-weight: 500; line-height: 1.2; letter-spacing: normal; padding: 0.4rem 0.65rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(16, 24, 40, 0.2); white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.12s ease 0.3s; pointer-events: none; z-index: 5; }
+.collapse-btn::after { content: attr(data-tip); position: absolute; top: calc(100% + 0.45rem); right: 0; background: #1f2937; color: #fff; font-size: 0.75rem; font-weight: 500; line-height: 1.2; letter-spacing: normal; padding: 0.4rem 0.65rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(16, 24, 40, 0.2); white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.12s ease 0.3s; pointer-events: none; z-index: 5; }
 .collapse-btn:hover::after, .collapse-btn:focus-visible::after { opacity: 1; visibility: visible; }
 
 .app-main { margin-left: var(--sidebar-w); min-width: 0; transition: margin-left 0.15s; }
@@ -64,11 +63,11 @@ a { color: var(--primary); }
 .app-shell.collapsed .app-main { margin-left: var(--sidebar-w-collapsed); }
 .app-shell.collapsed .brand { padding: 0; justify-content: center; }
 .app-shell.collapsed .brand-name { font-size: 0; }
-.app-shell.collapsed .brand-name::before { content: 'S'; font-size: 1.4rem; color: var(--primary); font-weight: 800; }
-.app-shell.collapsed .side-link { justify-content: center; padding-left: 0; padding-right: 0; }
+.app-shell.collapsed .brand-name { display: none; }
+/* the collapsed rail is narrower than the tooltip, so the browser's own title tip is used there */
+.app-shell.collapsed .collapse-btn::after { display: none; }
+.app-shell.collapsed .side-link { justify-content: center; margin: 0 0.5rem; width: calc(100% - 1rem); padding-left: 0; padding-right: 0; }
 .app-shell.collapsed .side-label, .app-shell.collapsed .chevron, .app-shell.collapsed .side-sub { display: none !important; }
-.app-shell.collapsed .side-tools { justify-content: center; padding-left: 0; padding-right: 0; }
-.app-shell.collapsed .collapse-btn::after { right: auto; left: 0; }
 .app-shell.collapsed .side-rule { margin: 0.6rem 0.9rem; }
 
 .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 1rem; height: var(--bar-h); box-sizing: border-box; padding: 0 1.75rem; background: var(--card); border-bottom: 1px solid var(--border); color: var(--text); }

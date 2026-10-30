@@ -1,5 +1,5 @@
 import {
-  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network, PanelLeftClose, PanelLeftOpen,
+  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network,
   ShieldCheck, Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -100,12 +100,6 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
 
   return (
     <nav className="sidebar-nav" aria-label="Main" onClick={(e) => { if ((e.target as HTMLElement).closest('a')) onNavigate?.() }}>
-      <div className="side-tools">
-        <button type="button" className="collapse-btn" data-tip={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={onToggleCollapsed}>
-          {collapsed ? <PanelLeftOpen size={18} aria-hidden="true" /> : <PanelLeftClose size={18} aria-hidden="true" />}
-        </button>
-      </div>
       <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
       <SideLink to="/org-chart" label="Org Chart" icon={Network} tone="green" />
       <SideLink to="/employees" label="Employees" icon={Users} tone="green" />
