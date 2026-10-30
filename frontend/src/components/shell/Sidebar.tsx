@@ -87,7 +87,7 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
     { to: '/admin/dashboard', label: 'HR Analytics' },
     { to: '/admin/departments', label: 'Departments' },
     { to: '/admin/designations', label: 'Designations' },
-    { to: '/admin/documents', label: 'Employee Documents' },
+    ...(hasProfile ? [{ to: '/admin/documents', label: 'Employee Documents' }] : []),
     { to: '/admin/documents/expiring', label: 'Expiring Documents' },
     { to: '/admin/document-categories', label: 'Document Categories' },
     ...(role === 'SYSTEM_ADMIN' ? [{ to: '/admin/users', label: 'User Management' }] : []),
@@ -97,15 +97,13 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
 
   return (
     <nav className="sidebar-nav" aria-label="Main" onClick={(e) => { if ((e.target as HTMLElement).closest('a')) onNavigate?.() }}>
-      <button type="button" className="icon-button expand-btn" aria-label="Expand sidebar" title="Expand sidebar" onClick={onToggleCollapsed}>
-        <PanelLeftOpen size={18} aria-hidden="true" />
-      </button>
-      <div className="side-row">
-        <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
-        <button type="button" className="collapse-btn" data-tip="Collapse sidebar" aria-label="Collapse sidebar" onClick={onToggleCollapsed}>
-          <PanelLeftClose size={18} aria-hidden="true" />
+      <div className="side-tools">
+        <button type="button" className="collapse-btn" data-tip={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={onToggleCollapsed}>
+          {collapsed ? <PanelLeftOpen size={18} aria-hidden="true" /> : <PanelLeftClose size={18} aria-hidden="true" />}
         </button>
       </div>
+      <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
       <SideLink to="/directory" label="Directory" icon={Users} tone="green" />
       <SideLink to="/org-chart" label="Org Chart" icon={Network} tone="green" />
       {canListEmployees(role) && <SideLink to="/employees" label={canManage ? 'Employees' : 'My Team'} icon={UsersRound} tone="green" />}

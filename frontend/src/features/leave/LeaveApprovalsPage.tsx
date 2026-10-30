@@ -129,7 +129,7 @@ export default function LeaveApprovalsPage({ scope }: Props) {
         actions={(
           <>
             {/* the ALL view is only reachable by HR/Admin, who are the ones who manage leave types */}
-            {scope === 'ALL' && <Link to="/admin/leave-types" className="button">Manage leave types</Link>}
+            {scope === 'ALL' && <Link to="/admin/leave-types" className="button secondary">Manage leave types</Link>}
             <select value={status} onChange={(e) => { setStatus(e.target.value as LeaveStatus | ''); setPage(0) }}>
               <option value="">All statuses</option>
               {LEAVE_STATUSES.map((s) => <option key={s}>{s}</option>)}

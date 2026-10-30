@@ -101,7 +101,7 @@ export default function EmployeeDetailPage() {
             <Link to={`/employees/${employee.id}/edit`} className="button">Edit</Link>
           )}
           {canManage && (
-            <Link to={`/admin/documents?employee=${employee.id}`} className="button">Documents</Link>
+            <Link to={`/admin/documents?employee=${employee.id}`} className="button secondary">Documents</Link>
           )}
           {canManage && !employee.deleted && (
             <button onClick={() => setReassigning(true)}>Reassign</button>

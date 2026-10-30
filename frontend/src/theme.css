@@ -39,7 +39,6 @@ a { color: var(--primary); }
 .sidebar-nav { display: flex; flex-direction: column; padding: 0.6rem 0 0.8rem; flex: 1; }
 .side-spacer { flex: 1; }
 .side-rule { height: 1px; background: var(--border); margin: 0.6rem 1.25rem; }
-.side-row { position: relative; display: flex; align-items: center; }
 .side-link { position: relative; display: flex; align-items: center; gap: 0.85rem; padding: 0.7rem 1.25rem; box-sizing: border-box; color: #344054; text-decoration: none; font-weight: 500; font-size: 0.95rem; background: none; border: 0; border-radius: 0; width: 100%; text-align: left; font-family: inherit; cursor: pointer; }
 .side-link:hover { background: #f5f7fb; }
 .side-link .ico { flex: none; }
@@ -54,12 +53,11 @@ a { color: var(--primary); }
 .side-sublink { padding: 0.5rem 1.25rem 0.5rem 3.4rem; color: #475467; text-decoration: none; font-size: 0.9rem; }
 .side-sublink:hover { background: #f5f7fb; }
 .side-sublink.active { color: var(--primary); font-weight: 600; background: var(--primary-soft); }
-.collapse-btn { position: absolute; right: 0.6rem; display: none; padding: 0.3rem; background: #fff; border: 1px solid #c9d3e6; border-radius: 8px; color: #344054; line-height: 0; }
+.side-tools { display: flex; justify-content: flex-end; padding: 0.15rem 0.9rem 0.45rem; }
+.collapse-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem; background: #fff; border: 1px solid #c9d3e6; border-radius: 8px; color: #344054; line-height: 0; }
 .collapse-btn:hover { background: #f5f7fb; }
-.side-row:hover .collapse-btn, .collapse-btn:focus-visible { display: inline-flex; }
-.collapse-btn::after { content: attr(data-tip); position: absolute; top: calc(100% + 0.35rem); left: 50%; transform: translateX(-30%); background: #1f2937; color: #fff; font-size: 0.75rem; font-weight: 500; padding: 0.3rem 0.55rem; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; z-index: 5; }
+.collapse-btn::after { content: attr(data-tip); position: absolute; top: calc(100% + 0.35rem); right: 0; background: #1f2937; color: #fff; font-size: 0.75rem; font-weight: 500; padding: 0.3rem 0.55rem; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; z-index: 5; }
 .collapse-btn:hover::after { opacity: 1; }
-.sidebar .expand-btn { display: none; margin: 0.4rem auto 0.2rem; }
 
 .app-main { margin-left: var(--sidebar-w); min-width: 0; transition: margin-left 0.15s; }
 .app-shell.collapsed .sidebar { width: var(--sidebar-w-collapsed); }
@@ -68,8 +66,9 @@ a { color: var(--primary); }
 .app-shell.collapsed .brand-name { font-size: 0; }
 .app-shell.collapsed .brand-name::before { content: 'S'; font-size: 1.4rem; color: var(--primary); font-weight: 800; }
 .app-shell.collapsed .side-link { justify-content: center; padding-left: 0; padding-right: 0; }
-.app-shell.collapsed .side-label, .app-shell.collapsed .chevron, .app-shell.collapsed .side-sub, .app-shell.collapsed .collapse-btn { display: none !important; }
-.app-shell.collapsed .sidebar .expand-btn { display: inline-flex; }
+.app-shell.collapsed .side-label, .app-shell.collapsed .chevron, .app-shell.collapsed .side-sub { display: none !important; }
+.app-shell.collapsed .side-tools { justify-content: center; padding-left: 0; padding-right: 0; }
+.app-shell.collapsed .collapse-btn::after { right: auto; left: 0; }
 .app-shell.collapsed .side-rule { margin: 0.6rem 0.9rem; }
 
 .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 1rem; height: var(--bar-h); box-sizing: border-box; padding: 0 1.75rem; background: var(--card); border-bottom: 1px solid var(--border); color: var(--text); }
@@ -262,3 +261,14 @@ fieldset.wide { border-color: var(--border); border-radius: var(--radius-sm); }
 .home-columns .data-table th, .home-columns .data-table td { white-space: nowrap; padding: 0.7rem 0.75rem; }
 
 .leave-list .person-meta, .leave-list .person-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* dialogs sit above the fixed sidebar (z 40) and top bar (z 30); long ones scroll inside the viewport */
+.modal-backdrop { z-index: 100; padding: 1rem; box-sizing: border-box; }
+.modal { max-height: calc(100vh - 2rem); overflow-y: auto; box-sizing: border-box; }
+.modal.pdf-modal { max-height: calc(100vh - 2rem); height: min(90vh, 60rem); overflow: hidden; }
+.sidebar { scrollbar-width: thin; }
+
+/* secondary link-button: same shape as the primary, white with a border */
+a.button.secondary { background: #fff; border-color: #d0d7e4; color: var(--text); }
+a.button.secondary:hover { background: #f4f6fb; border-color: #d0d7e4; }
+.page-header { align-items: center; }
