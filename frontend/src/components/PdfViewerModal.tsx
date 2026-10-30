@@ -93,7 +93,7 @@ export default function PdfViewerModal({ title, details, url, fileName, loading,
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal pdf-modal resizable" style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }}>
         <div className="pdf-head">
-          <div>
+          <div className="pdf-title">
             <h2>{title}</h2>
             {details && <div className="hint">{details}</div>}
           </div>
