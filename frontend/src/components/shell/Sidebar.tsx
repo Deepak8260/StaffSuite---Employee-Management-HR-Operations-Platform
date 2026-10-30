@@ -2,7 +2,7 @@ import {
   CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network, PanelLeftClose, PanelLeftOpen,
   ShieldCheck, Users, UsersRound,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { canListEmployees, canManageEmployees } from '../../utils/roles'
@@ -37,8 +37,11 @@ function SideGroup({ group, onExpandSidebar, collapsed }: { group: GroupDef; onE
   const containsActive = group.items.some((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
   const [open, setOpen] = useState(containsActive)
   const Icon = group.icon
-  // a group holding the current page is shown open, so you can see where you are
-  const expanded = open || containsActive
+  // navigating into a page of this group opens it; after that the user can fold it freely
+  useEffect(() => {
+    if (containsActive) setOpen(true)
+  }, [pathname, containsActive])
+  const expanded = open
   return (
     <div className="side-group">
       <button type="button" title={group.label} className={`side-link side-group-button ${containsActive ? 'has-active' : ''}`}
