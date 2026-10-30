@@ -268,6 +268,19 @@ fieldset.wide { border-color: var(--border); border-radius: var(--radius-sm); }
 .modal.pdf-modal { max-height: calc(100vh - 2rem); height: min(90vh, 60rem); overflow: hidden; }
 .sidebar { scrollbar-width: thin; }
 
+/* the PDF window is positioned by script so it can be resized from any edge or corner */
+.modal.pdf-modal.resizable { position: fixed; max-width: none; max-height: none; margin: 0; }
+.pdf-actions { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+.resize-handle { position: absolute; z-index: 2; touch-action: none; }
+.resize-n, .resize-s { left: 10px; right: 10px; height: 8px; cursor: ns-resize; }
+.resize-e, .resize-w { top: 10px; bottom: 10px; width: 8px; cursor: ew-resize; }
+.resize-n { top: -4px; } .resize-s { bottom: -4px; } .resize-e { right: -4px; } .resize-w { left: -4px; }
+.resize-ne, .resize-nw, .resize-se, .resize-sw { width: 16px; height: 16px; }
+.resize-ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.resize-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.resize-nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.resize-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
 /* secondary link-button: same shape as the primary, white with a border */
 a.button.secondary { background: #fff; border-color: #d0d7e4; color: var(--text); }
 a.button.secondary:hover { background: #f4f6fb; border-color: #d0d7e4; }

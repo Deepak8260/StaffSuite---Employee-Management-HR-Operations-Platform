@@ -39,6 +39,7 @@ export default function StoredPdfViewer({ document: doc, onClose }: Props) {
   return (
     <PdfViewerModal
       title={doc.fileName}
+      fileName={doc.fileName}
       url={url}
       loading={!url && !error}
       error={error}
