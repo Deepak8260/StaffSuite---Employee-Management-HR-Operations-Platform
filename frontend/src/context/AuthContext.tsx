@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     // TEMPORARY BYPASS FOR UI TESTING — remove before real use
+    void email
+    void password
     const fakeToken =
       'x.eyJ1c2VySWQiOiAxLCAiZW1haWwiOiAidGVzdEB0ZXN0LmNvbSIsICJyb2xlIjogIlNZU1RFTV9BRE1JTiIsICJlbXBsb3llZUlkIjogbnVsbCwgImV4cCI6IDk5OTk5OTk5OTl9.y'
     const user = userFromToken(fakeToken)
