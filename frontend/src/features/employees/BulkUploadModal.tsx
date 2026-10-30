@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { Download, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { bulkUploadEmployees, downloadBulkTemplate } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
@@ -78,6 +78,9 @@ export default function BulkUploadModal({ onClose, onCreated }: Props) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Bulk upload employees">
       <div className="modal bulk-modal">
+        <button type="button" className="modal-x" aria-label="Close" onClick={onClose} disabled={busy}>
+          <X size={20} aria-hidden="true" />
+        </button>
         <h2>Bulk upload employees</h2>
         <p className="hint">Add many employees at once from an Excel file.</p>
 
@@ -114,7 +117,6 @@ export default function BulkUploadModal({ onClose, onCreated }: Props) {
           {result
             ? <button type="button" onClick={reset}>Upload another file</button>
             : <button type="button" onClick={upload} disabled={!file || busy}>{busy ? 'Uploading…' : 'Upload'}</button>}
-          <button type="button" className="secondary" onClick={onClose} disabled={busy}>Close</button>
         </div>
       </div>
     </div>

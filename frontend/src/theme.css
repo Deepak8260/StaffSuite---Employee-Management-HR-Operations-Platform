@@ -290,7 +290,10 @@ a.button.secondary:hover { background: #f4f6fb; border-color: #d0d7e4; }
 .page-header { align-items: center; }
 
 /* bulk upload dialog and its format tooltip */
-.modal.bulk-modal { width: min(46rem, 100%); max-width: 46rem; }
+.modal.bulk-modal { position: relative; width: min(46rem, 100%); max-width: 46rem; }
+.modal-x { position: absolute; top: 0.85rem; right: 0.85rem; width: 2.1rem; height: 2.1rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 8px; color: #667085; cursor: pointer; }
+.modal-x:hover:not(:disabled) { background: #f2f4f7; color: #1d2939; }
+.modal-x:disabled { opacity: 0.4; cursor: default; }
 .bulk-row { display: flex; align-items: center; gap: 0.6rem; position: relative; }
 .info-tip { position: static; display: inline-flex; }
 .info-tip-btn { width: 1.4rem; height: 1.4rem; padding: 0; border-radius: 50%; border: 1px solid #98a2b3; background: #fff; color: #475467; font: italic 700 0.8rem/1 Georgia, serif; cursor: help; display: inline-flex; align-items: center; justify-content: center; }

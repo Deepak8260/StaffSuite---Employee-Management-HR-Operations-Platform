@@ -7,6 +7,7 @@ import type {
   EmployeeInput,
   SelfProfileInput,
 } from '../types/employee'
+import axios from 'axios'
 import { api } from './axiosInstance'
 
 const BASE = '/api/v1/employees'
@@ -66,7 +67,18 @@ export async function bulkUploadEmployees(file: File): Promise<BulkUploadResult>
 
 /** Fetches the blank template (needs the login token, so it cannot be a plain link) and saves it. */
 export async function downloadBulkTemplate(): Promise<void> {
-  const { data } = await api.get<Blob>(`${BASE}/bulk-upload/template`, { responseType: 'blob' })
+  let data: Blob
+  try {
+    ;({ data } = await api.get<Blob>(`${BASE}/bulk-upload/template`, { responseType: 'blob' }))
+  } catch (err) {
+    // with responseType 'blob' an error body arrives as a Blob too; unpack it so the real reason is shown
+    if (axios.isAxiosError(err) && err.response?.data instanceof Blob) {
+      try {
+        err.response.data = JSON.parse(await err.response.data.text())
+      } catch { /* not JSON: keep the generic message */ }
+    }
+    throw err
+  }
   const url = URL.createObjectURL(data)
   const a = document.createElement('a')
   a.href = url
