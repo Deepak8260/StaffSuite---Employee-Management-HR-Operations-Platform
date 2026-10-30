@@ -318,8 +318,10 @@ a.button.secondary:hover { background: #f4f6fb; border-color: #d0d7e4; }
 
 /* sign in / forgot / reset: product panel on the left, form card on the right.
    Sizes follow the window (width and height) so it fits laptops, zoomed browsers, tablets and phones. */
-.auth-shell { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: #fff; }
-.auth-hero { position: sticky; top: 0; align-self: start; height: 100vh; height: 100dvh; overflow: hidden; background: #b6d5f7; }
+.auth-shell { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: #fafbfd; }
+.auth-hero { position: sticky; top: 0; align-self: start; height: 100vh; height: 100dvh; overflow: hidden;
+  /* the picture fades into the form side instead of ending on a hard edge */
+  -webkit-mask-image: linear-gradient(to right, #000 80%, transparent 100%); mask-image: linear-gradient(to right, #000 80%, transparent 100%); }
 /* the picture carries the logo and text on its left side, so it is cropped from the right and bottom */
 .auth-hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
 .auth-panel { display: flex; align-items: center; justify-content: center; flex-direction: column; padding: clamp(1rem, 4vw, 2.5rem); background: #fafbfd; box-sizing: border-box; }
@@ -347,7 +349,8 @@ a.button.secondary:hover { background: #f4f6fb; border-color: #d0d7e4; }
    so it is zoomed in on the building and the logo is shown above the form instead. */
 @media (max-width: 900px) {
   .auth-shell { display: flex; flex-direction: column; }
-  .auth-hero { position: relative; width: 100%; height: clamp(10rem, 46vw, 22rem); flex: none; }
+  .auth-hero { position: relative; width: 100%; height: clamp(10rem, 46vw, 22rem); flex: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent 100%); mask-image: linear-gradient(to bottom, #000 75%, transparent 100%); }
   .auth-hero img { position: absolute; right: 0; top: -56vw; width: 215%; max-width: none; height: auto; }
   .auth-panel { flex: 1; }
   .auth-mobile-logo { display: block; }
