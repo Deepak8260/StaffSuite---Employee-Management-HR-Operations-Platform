@@ -1,5 +1,6 @@
 import type { PageResponse } from '../types/auth'
 import type {
+  BulkUploadResult,
   DirectoryEntry,
   Employee,
   EmployeeFilters,
@@ -54,4 +55,24 @@ export async function updateOwnProfile(id: number, input: SelfProfileInput): Pro
 export async function offboardEmployee(id: number): Promise<Employee> {
   const { data } = await api.put<Employee>(`${BASE}/${id}/offboard`)
   return data
+}
+
+export async function bulkUploadEmployees(file: File): Promise<BulkUploadResult> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<BulkUploadResult>(`${BASE}/bulk-upload`, form)
+  return data
+}
+
+/** Fetches the blank template (needs the login token, so it cannot be a plain link) and saves it. */
+export async function downloadBulkTemplate(): Promise<void> {
+  const { data } = await api.get<Blob>(`${BASE}/bulk-upload/template`, { responseType: 'blob' })
+  const url = URL.createObjectURL(data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'employee_bulk_upload_template.xlsx'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }

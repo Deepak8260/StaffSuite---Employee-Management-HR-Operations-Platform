@@ -71,3 +71,17 @@ export interface EmployeeFilters {
   q?: string
   includeOffboarded?: boolean
 }
+
+export interface BulkUploadRowError {
+  row: number
+  email: string
+  fullName: string
+  reason: string
+}
+
+export interface BulkUploadResult {
+  totalRows: number
+  created: number
+  failed: number
+  errors: BulkUploadRowError[]
+}

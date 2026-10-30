@@ -3,7 +3,10 @@ package com.staffsuite.controller;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,8 +17,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.staffsuite.dto.EmployeeDtos.BulkUploadResult;
 import com.staffsuite.dto.EmployeeDtos.DirectoryEntry;
 import com.staffsuite.dto.EmployeeDtos.EmployeeRequest;
 import com.staffsuite.dto.EmployeeDtos.EmployeeResponse;
@@ -24,6 +30,7 @@ import com.staffsuite.dto.OrganizationDtos.ReassignRequest;
 import com.staffsuite.dto.PageResponse;
 import com.staffsuite.entity.EmploymentStatus;
 import com.staffsuite.security.AuthenticatedUser;
+import com.staffsuite.service.EmployeeBulkImportService;
 import com.staffsuite.service.EmployeeService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +47,7 @@ public class EmployeeController {
     private static final String HR_ADMIN_OR_MANAGER = "hasAnyRole('SYSTEM_ADMIN','HR_ADMIN','MANAGER')";
 
     private final EmployeeService employeeService;
+    private final EmployeeBulkImportService bulkImportService;
 
     private static Pageable pageable(int page, int size, Sort sort) {
         return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE), sort);
@@ -86,6 +94,24 @@ public class EmployeeController {
             @Valid @RequestBody EmployeeRequest request, HttpServletRequest http) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(employeeService.create(actor, request, http.getRemoteAddr()));
+    }
+
+    @GetMapping("/bulk-upload/template")
+    @PreAuthorize(HR_OR_ADMIN)
+    public ResponseEntity<byte[]> bulkUploadTemplate() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename("employee_bulk_upload_template.xlsx").build().toString())
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bulkImportService.template());
+    }
+
+    /** Valid rows are created, invalid ones are reported with a reason; a wrong header row rejects the whole file. */
+    @PostMapping(value = "/bulk-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(HR_OR_ADMIN)
+    public BulkUploadResult bulkUpload(@AuthenticationPrincipal AuthenticatedUser actor,
+            @RequestPart("file") MultipartFile file, HttpServletRequest http) {
+        return bulkImportService.importFile(actor, file, http.getRemoteAddr());
     }
 
     @PutMapping("/{id}")

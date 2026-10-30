@@ -14,6 +14,8 @@ public interface DesignationRepository extends JpaRepository<Designation, Long> 
 
     List<Designation> findAllByOrderByTitleAsc();
 
+    List<Designation> findByTitleIgnoreCaseAndActiveTrue(String title);
+
     long countByDepartmentIdAndActiveTrue(Long departmentId);
 
     /** True when another designation already has this title in the same department (or both have none). */

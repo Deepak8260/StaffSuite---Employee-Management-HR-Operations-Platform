@@ -39,7 +39,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   function search(e: FormEvent) {
     e.preventDefault()
     const q = query.trim()
-    navigate(q ? `/directory?q=${encodeURIComponent(q)}` : '/directory')
+    navigate(q ? `/employees?q=${encodeURIComponent(q)}` : '/employees')
   }
 
   async function handleLogout() {

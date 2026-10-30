@@ -1,11 +1,11 @@
 import {
   CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network, PanelLeftClose, PanelLeftOpen,
-  ShieldCheck, Users, UsersRound,
+  ShieldCheck, Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { canListEmployees, canManageEmployees } from '../../utils/roles'
+import { canManageEmployees } from '../../utils/roles'
 
 interface Item {
   to: string
@@ -107,9 +107,8 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
         </button>
       </div>
       <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
-      <SideLink to="/directory" label="Directory" icon={Users} tone="green" />
       <SideLink to="/org-chart" label="Org Chart" icon={Network} tone="green" />
-      {canListEmployees(role) && <SideLink to="/employees" label={canManage ? 'Employees' : 'My Team'} icon={UsersRound} tone="green" />}
+      <SideLink to="/employees" label="Employees" icon={Users} tone="green" />
       {attendance.length > 0 && <SideGroup group={{ label: 'Attendance', icon: CalendarDays, tone: 'orange', items: attendance }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />}
       <SideGroup group={{ label: 'Leave', icon: FileText, tone: 'green', items: leave }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />
       {documentsTo && <SideLink to={documentsTo} label="Documents" icon={File} tone="slate" end />}

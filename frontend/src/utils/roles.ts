@@ -6,11 +6,6 @@ export function canManageEmployees(role: Role | undefined): boolean {
   return role === 'SYSTEM_ADMIN' || role === 'HR_ADMIN'
 }
 
-/** Roles that can open the full employee list (managers are limited to their team by the backend). */
-export function canListEmployees(role: Role | undefined): boolean {
-  return canManageEmployees(role) || role === 'MANAGER'
-}
-
 /** Login roles an actor may assign when onboarding (HR_ADMIN cannot grant elevated roles). */
 export function grantableRoles(role: Role | undefined): Role[] {
   if (role === 'SYSTEM_ADMIN') return ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SYSTEM_ADMIN']

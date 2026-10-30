@@ -3,6 +3,7 @@ package com.staffsuite.dto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -104,5 +105,12 @@ public final class EmployeeDtos {
 
     /** Basic directory info visible to every authenticated user. */
     public record DirectoryEntry(Long id, String fullName, String jobTitle, String departmentName) {
+    }
+
+    /** One rejected row of a bulk upload; {@code row} is the spreadsheet row number (row 1 is the header). */
+    public record BulkUploadRowError(int row, String email, String fullName, String reason) {
+    }
+
+    public record BulkUploadResult(int totalRows, int created, int failed, List<BulkUploadRowError> errors) {
     }
 }
