@@ -36,11 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSession])
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await authApi.login(email, password)
-    const user = userFromToken(res.token)
+    // TEMPORARY BYPASS FOR UI TESTING — remove before real use
+    const fakeToken =
+      'x.eyJ1c2VySWQiOiAxLCAiZW1haWwiOiAidGVzdEB0ZXN0LmNvbSIsICJyb2xlIjogIlNZU1RFTV9BRE1JTiIsICJlbXBsb3llZUlkIjogbnVsbCwgImV4cCI6IDk5OTk5OTk5OTl9.y'
+    const user = userFromToken(fakeToken)
     if (!user) throw new Error('Received an invalid token')
-    setToken(res.token)
-    setSession({ token: res.token, user })
+    setToken(fakeToken)
+    setSession({ token: fakeToken, user })
   }, [])
 
   const logout = useCallback(async () => {
