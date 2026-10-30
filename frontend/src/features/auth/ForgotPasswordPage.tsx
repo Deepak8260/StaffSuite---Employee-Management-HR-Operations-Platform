@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { requestPasswordReset } from '../../api/auth'
 import { errorMessage } from '../../api/axiosInstance'
+import AuthShell from '../../components/AuthShell'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -24,7 +25,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="page narrow">
+    <AuthShell>
       <h1>Forgot password</h1>
       {sent ? (
         <>
@@ -34,20 +35,20 @@ export default function ForgotPasswordPage() {
           </p>
         </>
       ) : (
-        <form onSubmit={handleSubmit} className="form">
+        <form onSubmit={handleSubmit} className="auth-form">
           <label>
             Email
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
           </label>
           {error && <p className="error">{error}</p>}
-          <button type="submit" disabled={busy}>
+          <button type="submit" className="auth-submit" disabled={busy}>
             Request reset
           </button>
         </form>
       )}
-      <p>
+      <p className="auth-link">
         <Link to="/login">Back to sign in</Link>
       </p>
-    </main>
+    </AuthShell>
   )
 }
