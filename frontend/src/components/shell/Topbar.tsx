@@ -1,8 +1,9 @@
-import { ChevronDown, KeyRound, LogOut, Menu, Search, UserRound } from 'lucide-react'
+import { ChevronDown, KeyRound, LogOut, Menu, Moon, Search, Sun, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useDisplayName } from '../../hooks/useDisplayName'
+import { useTheme } from '../../hooks/useTheme'
 import type { Role } from '../../types/auth'
 import NotificationBell from '../NotificationBell'
 import StatusPill from '../ui/StatusPill'
@@ -17,6 +18,7 @@ const ROLE_LABEL: Record<Role, string> = {
 export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth()
   const { fullName } = useDisplayName(user)
+  const { theme, toggle } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -61,7 +63,14 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
       </form>
 
       <div className="topbar-right">
-        <NotificationBell />
+        <div className="topbar-tools">
+          <button type="button" className="bell-button theme-toggle" onClick={toggle}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+            {theme === 'dark' ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+          </button>
+          <NotificationBell />
+        </div>
         <div className="user-menu" ref={menuRef}>
           <button type="button" className="user-button" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
             <span className="user-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
