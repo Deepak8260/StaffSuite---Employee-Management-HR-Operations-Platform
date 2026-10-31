@@ -33,6 +33,8 @@ import com.staffsuite.dto.PageResponse;
 import com.staffsuite.entity.EmploymentStatus;
 import com.staffsuite.security.AuthenticatedUser;
 import com.staffsuite.service.EmployeeBulkImportService;
+import com.staffsuite.service.EmployeeExportService;
+import com.staffsuite.service.EmployeeExportService.Export;
 import com.staffsuite.service.EmployeePhotoService;
 import com.staffsuite.service.EmployeePhotoService.Photo;
 import com.staffsuite.service.EmployeeProfileService;
@@ -54,6 +56,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeBulkImportService bulkImportService;
     private final EmployeeProfileService profileService;
+    private final EmployeeExportService exportService;
     private final EmployeePhotoService photoService;
 
     private static Pageable pageable(int page, int size, Sort sort) {
@@ -129,6 +132,22 @@ public class EmployeeController {
             @Valid @RequestBody EmployeeRequest request, HttpServletRequest http) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(employeeService.create(actor, request, http.getRemoteAddr()));
+    }
+
+    /** The list as an Excel report, with the same filters as {@link #list} but every matching row instead of one page. */
+    @GetMapping("/export")
+    @PreAuthorize(HR_OR_ADMIN)
+    public ResponseEntity<byte[]> export(@AuthenticationPrincipal AuthenticatedUser actor,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) EmploymentStatus status,
+            @RequestParam(required = false) Long managerId,
+            @RequestParam(name = "q", required = false) String search,
+            @RequestParam(defaultValue = "false") boolean includeOffboarded, HttpServletRequest http) {
+        Export file = exportService.export(actor, departmentId, status, managerId, search, includeOffboarded, http.getRemoteAddr());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(file.fileName()).build().toString())
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(file.content());
     }
 
     @GetMapping("/bulk-upload/template")

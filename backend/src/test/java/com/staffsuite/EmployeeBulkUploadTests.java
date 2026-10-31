@@ -197,4 +197,45 @@ class EmployeeBulkUploadTests {
     void nonExcelFilesAreRejected() throws Exception {
         upload(bearer("hr@test.com"), "a,b".getBytes(), "people.csv", 400);
     }
+
+    @Test
+    void exportProducesAFinishedWorkbookForHrAndRespectsFilters() throws Exception {
+        String hr = bearer("hr@test.com");
+        var res = mvc.perform(get("/api/v1/employees/export").header("Authorization", hr))
+                .andExpect(status().isOk()).andReturn().getResponse();
+        assertThat(res.getHeader("Content-Disposition")).contains("staffsuite-employees-").contains(".xlsx");
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(res.getContentAsByteArray()))) {
+            assertThat(wb.getSheetName(0)).isEqualTo("Employees");
+            assertThat(wb.getSheetName(1)).isEqualTo("Summary");
+            Sheet sheet = wb.getSheetAt(0);
+            assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).contains("Employee directory");
+            Row header = sheet.getRow(4);
+            assertThat(header.getCell(0).getStringCellValue()).isEqualTo("Employee code");
+            assertThat(header.getCell(1).getStringCellValue()).isEqualTo("Full name");
+            Row first = sheet.getRow(5);
+            assertThat(first.getCell(1).getStringCellValue()).isEqualTo("Boss Person");
+            assertThat(first.getCell(5).getStringCellValue()).isEqualTo("Engineering");
+            assertThat(first.getCell(8).getStringCellValue()).isEqualTo("Active");
+            assertThat(first.getCell(9).getLocalDateTimeCellValue().toLocalDate()).isEqualTo(LocalDate.now().minusYears(2));
+            assertThat((int) sheet.getPaneInformation().getHorizontalSplitTopRow()).isEqualTo(5);   // frozen under the header
+            assertThat(((org.apache.poi.xssf.usermodel.XSSFSheet) sheet).getCTWorksheet().isSetAutoFilter()).isTrue();
+            Sheet summary = wb.getSheetAt(1);
+            assertThat(summary.getRow(3).getCell(0).getStringCellValue()).isEqualTo("By status");
+        }
+
+        // the filters of the screen apply: a department with nobody in it gives an empty (but valid) report
+        var none = mvc.perform(get("/api/v1/employees/export?q=nobody-matches-this").header("Authorization", hr))
+                .andExpect(status().isOk()).andReturn().getResponse();
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(none.getContentAsByteArray()))) {
+            assertThat(wb.getSheetAt(0).getRow(5).getCell(0).getStringCellValue()).startsWith("No employees match");
+            assertThat(wb.getSheetAt(0).getRow(2).getCell(0).getStringCellValue()).contains("nobody-matches-this");
+        }
+    }
+
+    @Test
+    void exportIsForHrAndAdminOnly() throws Exception {
+        mvc.perform(get("/api/v1/employees/export").header("Authorization", bearer("emp@test.com")))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/employees/export")).andExpect(status().isUnauthorized());
+    }
 }

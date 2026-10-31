@@ -114,3 +114,30 @@ export async function removeEmployeePhoto(id: number): Promise<Employee> {
   const { data } = await api.delete<Employee>(`${BASE}/${id}/photo`)
   return data
 }
+
+/** Downloads the Excel report of the employees matching the filters (every match, not just the page on screen). */
+export async function exportEmployees(filters: EmployeeFilters): Promise<void> {
+  let data: Blob
+  let disposition: string | undefined
+  try {
+    const res = await api.get<Blob>(`${BASE}/export`, { params: filters, responseType: 'blob' })
+    data = res.data
+    disposition = res.headers['content-disposition']
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.data instanceof Blob) {
+      try {
+        err.response.data = JSON.parse(await err.response.data.text())
+      } catch { /* keep the generic message */ }
+    }
+    throw err
+  }
+  const name = /filename="?([^";]+)"?/.exec(disposition ?? '')?.[1] ?? 'staffsuite-employees.xlsx'
+  const url = URL.createObjectURL(data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}

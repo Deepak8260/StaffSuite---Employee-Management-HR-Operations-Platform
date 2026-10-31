@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { FileSpreadsheet, Plus, Users } from 'lucide-react'
+import { FileDown, FileSpreadsheet, Plus, Users } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { listDirectory, listEmployees, offboardEmployee } from '../../api/employees'
+import { exportEmployees, listDirectory, listEmployees, offboardEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
+import Flash from '../../components/Flash'
 import Pager from '../../components/Pager'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
@@ -55,6 +56,8 @@ export default function EmployeeListPage() {
   const [bulkOpen, setBulkOpen] = useState(false)
   const [offboarding, setOffboarding] = useState<Employee | null>(null)
   const [busy, setBusy] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   // a new search from the top bar replaces whatever was typed here (but not the state restored on first load)
   const first = useRef(true)
@@ -115,6 +118,18 @@ export default function EmployeeListPage() {
     setApplied({})
   }
 
+  /** The report follows the filters that were applied, so it matches the table on screen. */
+  async function exportToExcel() {
+    setExporting(true)
+    try {
+      await exportEmployees(applied)
+    } catch (err) {
+      setExportError(errorMessage(err, 'Could not export the employees'))
+    } finally {
+      setExporting(false)
+    }
+  }
+
   async function confirmOffboard() {
     if (!offboarding) return
     setBusy(true)
@@ -169,6 +184,9 @@ export default function EmployeeListPage() {
         description={canManage ? 'Search, filter and manage everyone in the company.' : 'Find colleagues by name, job title or department.'}
         actions={canManage && (
           <>
+            <button type="button" className="secondary" onClick={exportToExcel} disabled={exporting}>
+              <FileDown size={16} aria-hidden="true" /> {exporting ? 'Exporting…' : 'Export to Excel'}
+            </button>
             <button type="button" className="secondary" onClick={() => setBulkOpen(true)}>
               <FileSpreadsheet size={16} aria-hidden="true" /> Bulk Upload
             </button>
@@ -227,6 +245,7 @@ export default function EmployeeListPage() {
         {data && <Pager data={data} onPage={setPage} noun="employees" />}
       </SectionCard>
 
+      <Flash message={exportError} kind="error" onDone={() => setExportError(null)} />
       {bulkOpen && <BulkUploadModal onClose={() => setBulkOpen(false)} onCreated={() => { setPage(0); void load() }} />}
 
       {offboarding && (
