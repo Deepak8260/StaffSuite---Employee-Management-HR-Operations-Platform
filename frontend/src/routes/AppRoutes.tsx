@@ -71,7 +71,14 @@ export default function AppRoutes() {
         />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/employees/:id/profile" element={<EmployeeProfilePage />} />
-        <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route
+          path="/org-chart"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN', 'MANAGER']}>
+              <OrgChartPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route
           path="/admin/dashboard"
@@ -204,7 +211,14 @@ export default function AppRoutes() {
           }
         />
 
-        <Route path="/employees" element={<EmployeeListPage />} />
+        <Route
+          path="/employees"
+          element={
+            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN', 'MANAGER']}>
+              <EmployeeListPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/employees/new"
           element={

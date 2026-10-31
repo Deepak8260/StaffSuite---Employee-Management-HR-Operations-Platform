@@ -243,7 +243,7 @@ class OrganizationFlowTests {
 
     @Test
     void orgChartReflectsManagerHierarchyOfActiveEmployees() throws Exception {
-        String t = bearer("emp@test.com");   // any authenticated user
+        String t = bearer("hr@test.com");   // HR/Admin see the whole company
         JsonNode roots = body(send("GET", "/api/v1/org-chart", t, null).andExpect(status().isOk()));
         assertThat(roots.size()).isEqualTo(1);
         JsonNode cara = roots.get(0);

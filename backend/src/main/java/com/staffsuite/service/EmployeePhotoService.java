@@ -107,12 +107,17 @@ public class EmployeePhotoService {
         return mapper.toResponse(employee);
     }
 
-    /** Any signed-in user may load a photo, the same audience as the directory it appears in. */
+    /** Same audience as the profile: HR/Admin, the employee and their direct manager. */
     @Transactional(readOnly = true)
     public Photo load(AuthenticatedUser actor, Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .filter(e -> !e.isDeleted() || isHrOrAdmin(actor))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Photo not found"));
+        boolean self = employeeId.equals(actor.employeeId());
+        boolean directManager = employee.getManager() != null && employee.getManager().getId().equals(actor.employeeId());
+        if (!isHrOrAdmin(actor) && !self && !directManager) {
+            throw new AccessDeniedException("Access denied");
+        }
         String reference = employee.getProfilePhotoUrl();
         if (reference == null || !storage.exists(reference)) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Photo not found");

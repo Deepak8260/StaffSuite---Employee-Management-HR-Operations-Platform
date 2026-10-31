@@ -206,7 +206,7 @@ class EmployeeFlowTests {
     }
 
     @Test
-    void regularEmployeeGetsDirectoryOnlyAndOwnProfile() throws Exception {
+    void regularEmployeeSeesOnlyThemselvesEverywhere() throws Exception {
         String t = bearer("rita@test.com");
         send("GET", "/api/v1/employees", t, null).andExpect(status().isForbidden());
         send("GET", "/api/v1/employees/" + report2.getId(), t, null).andExpect(status().isForbidden());
@@ -214,8 +214,8 @@ class EmployeeFlowTests {
 
         String dir = send("GET", "/api/v1/employees/directory", t, null).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        assertThat(dir).contains("Ravi Report").doesNotContain("@test.com").doesNotContain("phone")
-                .doesNotContain("dateOfBirth");
+        assertThat(dir).contains("Rita Report").doesNotContain("Ravi Report").doesNotContain("Maya Manager")
+                .doesNotContain("@test.com").doesNotContain("phone").doesNotContain("dateOfBirth");
     }
 
     @Test

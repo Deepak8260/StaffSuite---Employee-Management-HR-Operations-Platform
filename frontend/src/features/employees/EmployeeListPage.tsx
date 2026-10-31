@@ -180,8 +180,8 @@ export default function EmployeeListPage() {
   return (
     <main className="page">
       <PageHeader
-        title="Employees"
-        description={canManage ? 'Search, filter and manage everyone in the company.' : 'Find colleagues by name, job title or department.'}
+        title={canManage ? 'Employees' : 'My team'}
+        description={canManage ? 'Search, filter and manage everyone in the company.' : 'You and the people who report to you.'}
         actions={canManage && (
           <>
             <button type="button" className="secondary" onClick={exportToExcel} disabled={exporting}>
@@ -227,7 +227,7 @@ export default function EmployeeListPage() {
         </SectionCard>
       ) : null}
 
-      <SectionCard title={canManage ? 'Employees' : 'People'} icon={Users} tint="blue"
+      <SectionCard title={canManage ? 'Employees' : 'My team'} icon={Users} tint="blue"
         actions={canManage ? undefined : (
           <form onSubmit={applyFilters} className="inline-form">
             <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} />

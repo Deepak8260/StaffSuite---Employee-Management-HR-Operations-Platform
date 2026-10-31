@@ -78,11 +78,12 @@ public class EmployeeController {
                 pageable(page, size, Sort.by("employeeCode")));
     }
 
-    /** Basic info (name, title, department) for every authenticated user. */
+    /** Basic info (name, title, department) of the people the caller is allowed to see (see EmployeeService.directory). */
     @GetMapping("/directory")
-    public PageResponse<DirectoryEntry> directory(@RequestParam(name = "q", required = false) String search,
+    public PageResponse<DirectoryEntry> directory(@AuthenticationPrincipal AuthenticatedUser actor,
+            @RequestParam(name = "q", required = false) String search,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-        return employeeService.directory(search, pageable(page, size, Sort.by("fullName")));
+        return employeeService.directory(actor, search, pageable(page, size, Sort.by("fullName")));
     }
 
     @GetMapping("/{id}")

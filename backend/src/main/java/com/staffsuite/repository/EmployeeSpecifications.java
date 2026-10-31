@@ -22,6 +22,10 @@ public final class EmployeeSpecifications {
         return (root, query, cb) -> cb.equal(root.get("employmentStatus"), status);
     }
 
+    public static Specification<Employee> withId(Long id) {
+        return (root, query, cb) -> cb.equal(root.get("id"), id);
+    }
+
     public static Specification<Employee> managedBy(Long managerId) {
         return (root, query, cb) -> cb.equal(root.get("manager").get("id"), managerId);
     }

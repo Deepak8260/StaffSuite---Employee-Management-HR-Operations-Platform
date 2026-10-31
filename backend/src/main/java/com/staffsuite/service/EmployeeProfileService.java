@@ -38,10 +38,6 @@ public class EmployeeProfileService {
     public EmployeeProfile profile(AuthenticatedUser actor, Long id) {
         ProfileEmployee basics = employeeService.getForProfile(actor, id);
         EmployeeResponse e = basics.employee();
-        if (!basics.full()) {
-            return new EmployeeProfile(e.id(), "DIRECTORY", e.fullName(), e.jobTitle(), e.departmentName(),
-                    e.profilePhotoUrl(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-        }
         ProfileLeaveSummary leave = new ProfileLeaveSummary(
                 leaveBalanceService.getBalances(actor, id, null), leaveRequestService.countPending(actor, id));
         return new EmployeeProfile(e.id(), "FULL", e.fullName(), e.jobTitle(), e.departmentName(), e.profilePhotoUrl(),

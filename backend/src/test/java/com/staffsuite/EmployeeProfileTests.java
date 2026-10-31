@@ -202,18 +202,11 @@ class EmployeeProfileTests {
     }
 
     @Test
-    void everyoneElseGetsOnlyDirectoryLevelDataAndNothingElse() throws Exception {
-        // a manager looking at someone else's report, and an employee looking at a colleague
+    void nobodyElseCanOpenAProfileAtAll() throws Exception {
+        // another team's manager and a colleague: refused, not even a reduced view
         for (String who : List.of("olga@test.com", "b@test.com")) {
-            JsonNode p = profile(bearer(who), empA);
-            assertThat(p.get("accessLevel").asString()).as(who).isEqualTo("DIRECTORY");
-            assertThat(p.get("fullName").asString()).isEqualTo("Asha Employee");
-            assertThat(p.get("jobTitle").asString()).isEqualTo("Engineer");
-            assertThat(p.get("departmentName").asString()).isEqualTo("Engineering");
-            for (String hidden : List.of("employeeCode", "email", "phone", "address", "emergencyContact", "dateOfBirth", "joiningDate", "employmentStatus",
-                    "designationName", "managerId", "managerName", "leave", "attendance", "documents", "directReports")) {
-                assertThat(p.get(hidden).isNull()).as(who + " must not see " + hidden).isTrue();
-            }
+            mvc.perform(get("/api/v1/employees/" + empA.getId() + "/profile").header("Authorization", bearer(who)))
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -239,10 +232,12 @@ class EmployeeProfileTests {
         assertThat(reference).startsWith("employee-photos/" + empA.getId() + "/").endsWith(".png");
         assertThat(storage.files).containsKey(reference);
 
-        // anyone signed in can load it (it is shown in the directory too), and it is an image
-        byte[] served = mvc.perform(get(url).header("Authorization", bearer("b@test.com")))
+        // only the people who may see the profile can load it, and it is an image
+        byte[] served = mvc.perform(get(url).header("Authorization", bearer("mgr@test.com")))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         assertThat(served).isEqualTo(PNG);
+        mvc.perform(get(url).header("Authorization", bearer("b@test.com"))).andExpect(status().isForbidden());
+        mvc.perform(get(url).header("Authorization", bearer("olga@test.com"))).andExpect(status().isForbidden());
         mvc.perform(get(url)).andExpect(status().isUnauthorized());
 
         // someone else's photo can only be changed by HR/Admin
@@ -252,8 +247,6 @@ class EmployeeProfileTests {
         // the replaced file is removed from storage
         assertThat(storage.files).doesNotContainKey(reference);
 
-        // a directory-level viewer still sees the photo
-        assertThat(profile(bearer("b@test.com"), empA).get("profilePhotoUrl").asString()).isEqualTo(url);
     }
 
     @Test
@@ -272,7 +265,9 @@ class EmployeeProfileTests {
         empB.setDeleted(true);
         employees.save(empB);
         mvc.perform(get("/api/v1/employees/" + empB.getId() + "/profile").header("Authorization", bearer("a@test.com")))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/employees/" + empB.getId() + "/profile").header("Authorization", bearer("olga@test.com")))
+                .andExpect(status().isNotFound());      // even their own manager no longer sees a person who has left
         mvc.perform(get("/api/v1/employees/" + empB.getId() + "/profile").header("Authorization", bearer("hr@test.com")))
                 .andExpect(status().isOk());
     }
@@ -315,8 +310,6 @@ class EmployeeProfileTests {
         JsonNode full = profile(bearer("mgr@test.com"), empA).get("completion");
         assertThat(full.get("percent").asInt()).isEqualTo(100);
         assertThat(full.get("complete").asBoolean()).isTrue();
-        // directory-level viewers do not see it
-        assertThat(profile(bearer("b@test.com"), empA).get("completion").isNull()).isTrue();
     }
 
     @Test
@@ -403,5 +396,75 @@ class EmployeeProfileTests {
         uploadDocument(bearer("hr@test.com"), empA, "SELF_AND_HR");     // HR adds the last item
         assertThat(profile(a, empA).get("completion").get("percent").asInt()).isEqualTo(100);
         assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
+    }
+
+    // ------------------------------------------------------------ data isolation
+
+    private List<String> directoryNames(String token) throws Exception {
+        JsonNode page = json.readTree(mvc.perform(get("/api/v1/employees/directory?size=50").header("Authorization", token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        List<String> out = new ArrayList<>();
+        page.get("content").forEach(n -> out.add(n.get("fullName").asString()));
+        return out;
+    }
+
+    @Test
+    void theDirectoryShowsOnlyThePeopleTheCallerMaySee() throws Exception {
+        assertThat(directoryNames(bearer("a@test.com"))).containsExactly("Asha Employee");
+        assertThat(directoryNames(bearer("b@test.com"))).containsExactly("Bela Employee");
+        assertThat(directoryNames(bearer("mgr@test.com"))).containsExactlyInAnyOrder("Mark Manager", "Asha Employee");
+        assertThat(directoryNames(bearer("olga@test.com"))).containsExactlyInAnyOrder("Olga Other", "Bela Employee");
+        assertThat(directoryNames(bearer("hr@test.com"))).hasSize(4);
+        assertThat(directoryNames(bearer("admin@test.com"))).hasSize(4);
+        // searching cannot reach beyond the scope either
+        JsonNode found = json.readTree(mvc.perform(get("/api/v1/employees/directory?q=Bela").header("Authorization", bearer("a@test.com")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(found.get("totalElements").asLong()).isZero();
+    }
+
+    @Test
+    void theOrgChartIsLimitedTheSameWay() throws Exception {
+        JsonNode mine = json.readTree(mvc.perform(get("/api/v1/org-chart").header("Authorization", bearer("a@test.com")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(mine.size()).isEqualTo(1);
+        assertThat(mine.get(0).get("fullName").asString()).isEqualTo("Asha Employee");
+        assertThat(mine.get(0).get("children").size()).isZero();
+
+        JsonNode team = json.readTree(mvc.perform(get("/api/v1/org-chart").header("Authorization", bearer("mgr@test.com")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(team.size()).isEqualTo(1);
+        assertThat(team.get(0).get("fullName").asString()).isEqualTo("Mark Manager");
+        assertThat(team.get(0).get("children").get(0).get("fullName").asString()).isEqualTo("Asha Employee");
+        assertThat(team.toString()).doesNotContain("Olga").doesNotContain("Bela");
+
+        JsonNode all = json.readTree(mvc.perform(get("/api/v1/org-chart").header("Authorization", bearer("hr@test.com")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(all.size()).isEqualTo(2);
+    }
+
+    @Test
+    void everyOtherEmployeeEndpointRefusesToShowSomeoneElse() throws Exception {
+        String a = bearer("a@test.com");
+        String olga = bearer("olga@test.com");
+        for (String url : List.of("/api/v1/employees/" + empB.getId(), "/api/v1/employees/" + empB.getId() + "/profile",
+                "/api/v1/employees/" + empB.getId() + "/photo", "/api/v1/employees/" + empB.getId() + "/documents",
+                "/api/v1/employees/" + empB.getId() + "/team")) {
+            mvc.perform(get(url).header("Authorization", a)).andExpect(status().isForbidden());
+        }
+        // a manager sees their own report but not another team's person, nor a peer manager
+        mvc.perform(get("/api/v1/employees/" + empA.getId() + "/profile").header("Authorization", bearer("mgr@test.com")))
+                .andExpect(status().isOk());
+        for (Employee other : List.of(empB, otherMgrEmp)) {
+            mvc.perform(get("/api/v1/employees/" + other.getId() + "/profile").header("Authorization", bearer("mgr@test.com")))
+                    .andExpect(status().isForbidden());
+        }
+        // a person's own manager can't be read by the person either (only HR/Admin and the manager themself)
+        mvc.perform(get("/api/v1/employees/" + mgrEmp.getId() + "/profile").header("Authorization", a)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/employees/" + empA.getId() + "/profile").header("Authorization", olga)).andExpect(status().isForbidden());
+        // the full employee list is not available to employees, and a manager gets only their own team
+        mvc.perform(get("/api/v1/employees").header("Authorization", a)).andExpect(status().isForbidden());
+        JsonNode list = json.readTree(mvc.perform(get("/api/v1/employees").header("Authorization", bearer("mgr@test.com")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(list.get("totalElements").asLong()).isEqualTo(1);
     }
 }

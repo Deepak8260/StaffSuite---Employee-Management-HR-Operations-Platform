@@ -56,11 +56,13 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
         <Menu size={20} aria-hidden="true" />
       </button>
 
-      <form className="global-search" role="search" onSubmit={search}>
-        <Search size={18} aria-hidden="true" />
-        <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search employees, documents, leave requests..." aria-label="Search" />
-      </form>
+      {user.role === 'EMPLOYEE' ? <span className="topbar-spacer" /> : (
+        <form className="global-search" role="search" onSubmit={search}>
+          <Search size={18} aria-hidden="true" />
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search employees, documents, leave requests..." aria-label="Search" />
+        </form>
+      )}
 
       <div className="topbar-right">
         <div className="topbar-tools">

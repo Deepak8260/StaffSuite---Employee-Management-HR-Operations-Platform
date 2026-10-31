@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.staffsuite.dto.OrganizationDtos.OrgNode;
 import com.staffsuite.entity.Employee;
+import com.staffsuite.entity.Role;
+import com.staffsuite.security.AuthenticatedUser;
 import com.staffsuite.repository.EmployeeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,12 +26,18 @@ public class OrgChartService {
     private final EmployeeRepository employeeRepository;
 
     /**
-     * Builds the manager -> direct reports forest for all active employees. Anyone with no manager
+     * Builds the manager -> direct reports forest of the active employees the caller may see: everyone for HR/Admin,
+     * a Manager's own team (themself on top), and only themself for anyone else. Anyone with no visible manager
      * (or whose manager has been offboarded) is a root.
      */
     @Transactional(readOnly = true)
-    public List<OrgNode> build() {
-        List<Employee> employees = employeeRepository.findByDeletedFalse();
+    public List<OrgNode> build(AuthenticatedUser actor) {
+        boolean all = actor.role() == Role.SYSTEM_ADMIN || actor.role() == Role.HR_ADMIN;
+        Long me = actor.employeeId();
+        List<Employee> employees = employeeRepository.findByDeletedFalse().stream()
+                .filter(e -> all || (me != null && (e.getId().equals(me)
+                        || (actor.role() == Role.MANAGER && e.getManager() != null && e.getManager().getId().equals(me)))))
+                .toList();
         Set<Long> activeIds = new HashSet<>();
         employees.forEach(e -> activeIds.add(e.getId()));
 

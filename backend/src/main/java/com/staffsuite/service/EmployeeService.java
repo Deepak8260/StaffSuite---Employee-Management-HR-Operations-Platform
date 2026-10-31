@@ -101,10 +101,23 @@ public class EmployeeService {
         return PageResponse.of(employeeRepository.findAll(Specification.allOf(specs), pageable), mapper::toResponse);
     }
 
+    /**
+     * Basic info (name, title, department) of the people the caller may see: HR/Admin see everyone, a Manager sees
+     * themself and their direct reports, anyone else only themself.
+     */
     @Transactional(readOnly = true)
-    public PageResponse<DirectoryEntry> directory(String search, Pageable pageable) {
+    public PageResponse<DirectoryEntry> directory(AuthenticatedUser actor, String search, Pageable pageable) {
         List<Specification<Employee>> specs = new ArrayList<>();
         specs.add(EmployeeSpecifications.notDeleted());
+        if (!isHrOrAdmin(actor)) {
+            if (actor.employeeId() == null) {
+                return PageResponse.of(new PageImpl<Employee>(List.of(), pageable, 0), mapper::toDirectoryEntry);
+            }
+            Specification<Employee> self = EmployeeSpecifications.withId(actor.employeeId());
+            specs.add(actor.role() == Role.MANAGER
+                    ? Specification.anyOf(self, EmployeeSpecifications.managedBy(actor.employeeId()))
+                    : self);
+        }
         if (search != null && !search.isBlank()) {
             specs.add(EmployeeSpecifications.matches(search));
         }
@@ -127,17 +140,20 @@ public class EmployeeService {
         return mapper.toResponse(employee);
     }
 
-    /** Same visibility as everywhere else: HR/Admin, the employee and their direct manager see everything. */
+    /** HR/Admin, the employee and their direct manager only; nobody else gets any part of a profile. */
     @Transactional(readOnly = true)
     public ProfileEmployee getForProfile(AuthenticatedUser actor, Long id) {
         Employee employee = find(id);
         boolean privileged = isHrOrAdmin(actor);
         boolean self = id.equals(actor.employeeId());
         boolean directManager = employee.getManager() != null && employee.getManager().getId().equals(actor.employeeId());
+        if (!privileged && !self && !directManager) {
+            throw new AccessDeniedException("Access denied");
+        }
         if (employee.isDeleted() && !privileged) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Employee not found");
         }
-        return new ProfileEmployee(mapper.toResponse(employee), privileged || self || directManager);
+        return new ProfileEmployee(mapper.toResponse(employee), true);
     }
 
     /** Current (not offboarded) people reporting directly to this employee, by name. */

@@ -18,9 +18,9 @@ public class OrgChartController {
 
     private final OrgChartService orgChartService;
 
-    /** Hierarchy of active employees (name, title, department only), visible to every signed-in user. */
+    /** Hierarchy of the active employees the caller may see (name, title, department only). */
     @GetMapping
-    public List<OrgNode> orgChart() {
-        return orgChartService.build();
+    public List<OrgNode> orgChart(@org.springframework.security.core.annotation.AuthenticationPrincipal com.staffsuite.security.AuthenticatedUser actor) {
+        return orgChartService.build(actor);
     }
 }

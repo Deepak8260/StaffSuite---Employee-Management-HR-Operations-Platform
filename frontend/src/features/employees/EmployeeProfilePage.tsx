@@ -234,7 +234,9 @@ export default function EmployeeProfilePage() {
 
   const header = (
     <div className="profile-bar">
-      <Link to="/employees" className="back-link" onClick={goBack}><ArrowLeft size={16} aria-hidden="true" /> Back to Employees</Link>
+      {user?.role === 'EMPLOYEE'
+        ? <Link to="/" className="back-link"><ArrowLeft size={16} aria-hidden="true" /> Back to Home</Link>
+        : <Link to="/employees" className="back-link" onClick={goBack}><ArrowLeft size={16} aria-hidden="true" /> Back to {canManage ? 'Employees' : 'My team'}</Link>}
       {canManage && current && (
         <Link to={`/employees/${employeeId}/edit`} className="button"><Pencil size={15} aria-hidden="true" /> Edit</Link>
       )}
@@ -320,7 +322,7 @@ export default function EmployeeProfilePage() {
               {current.employmentStatus && <StatusCodePill status={current.employmentStatus} />}
             </div>
             {current.managerId != null && current.managerName && (
-              <p className="reports-to">Reports to: <EmployeeLink id={current.managerId}>{current.managerName}</EmployeeLink></p>
+              <p className="reports-to">Reports to: {canManage ? <EmployeeLink id={current.managerId}>{current.managerName}</EmployeeLink> : <strong>{current.managerName}</strong>}</p>
             )}
           </div>
         </div>
