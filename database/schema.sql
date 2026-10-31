@@ -68,6 +68,7 @@ CREATE TABLE employees (
     department_id     BIGINT       NULL,
     designation_id    BIGINT       NULL,
     manager_id        BIGINT       NULL,
+    profile_photo_url VARCHAR(500) NULL,  -- storage reference of the photo, never the image itself
     is_deleted        BOOLEAN      NOT NULL DEFAULT FALSE,  -- soft delete (offboarded)
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProtectedRoute from '../components/ProtectedRoute'
 import ChangePasswordPage from '../features/auth/ChangePasswordPage'
@@ -13,10 +13,10 @@ import DocumentCategoriesPage from '../features/documents/DocumentCategoriesPage
 import EmployeeDocumentsPage from '../features/documents/EmployeeDocumentsPage'
 import ExpiringDocumentsPage from '../features/documents/ExpiringDocumentsPage'
 import MyDocumentsPage from '../features/documents/MyDocumentsPage'
-import DirectoryPage from '../features/employees/DirectoryPage'
 import EmployeeDetailPage from '../features/employees/EmployeeDetailPage'
 import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
+import EmployeeProfilePage from '../features/employees/EmployeeProfilePage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
 import NotificationsPage from '../features/notifications/NotificationsPage'
@@ -31,6 +31,11 @@ import DepartmentsPage from '../features/organization/DepartmentsPage'
 import DesignationsPage from '../features/organization/DesignationsPage'
 import OrgChartPage from '../features/organization/OrgChartPage'
 import UserManagementPage from '../features/users/UserManagementPage'
+
+function DirectoryRedirect() {
+  const { search } = useLocation()
+  return <Navigate to={`/employees${search}`} replace />
+}
 
 export default function AppRoutes() {
   return (
@@ -48,7 +53,8 @@ export default function AppRoutes() {
       >
         <Route path="/" element={<HomePage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
-        <Route path="/directory" element={<DirectoryPage />} />
+        {/* the old standalone Directory page now lives in Employees; keep old links and bookmarks working */}
+        <Route path="/directory" element={<DirectoryRedirect />} />
         <Route
           path="/my-profile"
           element={
@@ -58,6 +64,7 @@ export default function AppRoutes() {
           }
         />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+        <Route path="/employees/:id/profile" element={<EmployeeProfilePage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route
@@ -191,14 +198,7 @@ export default function AppRoutes() {
           }
         />
 
-        <Route
-          path="/employees"
-          element={
-            <ProtectedRoute roles={['SYSTEM_ADMIN', 'HR_ADMIN', 'MANAGER']}>
-              <EmployeeListPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/employees" element={<EmployeeListPage />} />
         <Route
           path="/employees/new"
           element={

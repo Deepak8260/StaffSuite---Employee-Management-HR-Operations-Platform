@@ -75,7 +75,7 @@ export default function ExpiringDocumentsPage() {
       className: 'row-actions',
       render: (d) => (
         <>
-          <Link to={`/admin/documents?employee=${d.employeeId}`} className="button">Manage</Link>
+          <Link to={`/admin/documents?employee=${d.employeeId}`} className="button secondary">Manage</Link>
           <button type="button" onClick={() => handleDownload(d)}>Download</button>
         </>
       ),

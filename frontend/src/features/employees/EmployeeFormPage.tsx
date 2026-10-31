@@ -115,7 +115,7 @@ export default function EmployeeFormPage() {
     setBusy(true)
     try {
       const saved = editingId === null ? await createEmployee(input) : await updateEmployee(editingId, input)
-      navigate(`/employees/${saved.id}`, { replace: true })
+      navigate(`/employees/${saved.id}/profile`, { replace: true })
     } catch (err) {
       setError(errorMessage(err, 'Could not save employee'))
     } finally {
@@ -214,7 +214,7 @@ export default function EmployeeFormPage() {
         {error && <p className="error wide">{error}</p>}
         <div className="wide actions">
           <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
-          <Link to={editingId === null ? '/employees' : `/employees/${editingId}`}>Cancel</Link>
+          <Link to={editingId === null ? '/employees' : `/employees/${editingId}/profile`}>Cancel</Link>
         </div>
       </form>
       </SectionCard>

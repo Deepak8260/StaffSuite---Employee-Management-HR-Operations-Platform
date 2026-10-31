@@ -65,7 +65,7 @@ export default function MyProfilePage() {
       {error && !employee && <p className="error">{error}</p>}
       {employee && (
         <>
-          <SectionCard title={employee.fullName} icon={UserRound} tint="blue">
+          <SectionCard title="Personal details" icon={UserRound} tint="blue">
             <div className="person profile-id">
               <AvatarInitials name={employee.fullName} size="lg" />
               <div className="person-text">

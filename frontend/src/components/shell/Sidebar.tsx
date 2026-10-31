@@ -1,11 +1,11 @@
 import {
-  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network, PanelLeftClose, PanelLeftOpen,
-  ShieldCheck, Users, UsersRound,
+  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network,
+  ShieldCheck, Users,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { canListEmployees, canManageEmployees } from '../../utils/roles'
+import { canManageEmployees } from '../../utils/roles'
 
 interface Item {
   to: string
@@ -37,8 +37,11 @@ function SideGroup({ group, onExpandSidebar, collapsed }: { group: GroupDef; onE
   const containsActive = group.items.some((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
   const [open, setOpen] = useState(containsActive)
   const Icon = group.icon
-  // a group holding the current page is shown open, so you can see where you are
-  const expanded = open || containsActive
+  // navigating into a page of this group opens it; after that the user can fold it freely
+  useEffect(() => {
+    if (containsActive) setOpen(true)
+  }, [pathname, containsActive])
+  const expanded = open
   return (
     <div className="side-group">
       <button type="button" title={group.label} className={`side-link side-group-button ${containsActive ? 'has-active' : ''}`}
@@ -87,7 +90,7 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
     { to: '/admin/dashboard', label: 'HR Analytics' },
     { to: '/admin/departments', label: 'Departments' },
     { to: '/admin/designations', label: 'Designations' },
-    { to: '/admin/documents', label: 'Employee Documents' },
+    ...(hasProfile ? [{ to: '/admin/documents', label: 'Employee Documents' }] : []),
     { to: '/admin/documents/expiring', label: 'Expiring Documents' },
     { to: '/admin/document-categories', label: 'Document Categories' },
     ...(role === 'SYSTEM_ADMIN' ? [{ to: '/admin/users', label: 'User Management' }] : []),
@@ -97,18 +100,9 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
 
   return (
     <nav className="sidebar-nav" aria-label="Main" onClick={(e) => { if ((e.target as HTMLElement).closest('a')) onNavigate?.() }}>
-      <button type="button" className="icon-button expand-btn" aria-label="Expand sidebar" title="Expand sidebar" onClick={onToggleCollapsed}>
-        <PanelLeftOpen size={18} aria-hidden="true" />
-      </button>
-      <div className="side-row">
-        <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
-        <button type="button" className="collapse-btn" data-tip="Collapse sidebar" aria-label="Collapse sidebar" onClick={onToggleCollapsed}>
-          <PanelLeftClose size={18} aria-hidden="true" />
-        </button>
-      </div>
-      <SideLink to="/directory" label="Directory" icon={Users} tone="green" />
+      <SideLink to="/" label="Home" icon={House} tone="blue" end fill />
       <SideLink to="/org-chart" label="Org Chart" icon={Network} tone="green" />
-      {canListEmployees(role) && <SideLink to="/employees" label={canManage ? 'Employees' : 'My Team'} icon={UsersRound} tone="green" />}
+      <SideLink to="/employees" label="Employees" icon={Users} tone="green" />
       {attendance.length > 0 && <SideGroup group={{ label: 'Attendance', icon: CalendarDays, tone: 'orange', items: attendance }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />}
       <SideGroup group={{ label: 'Leave', icon: FileText, tone: 'green', items: leave }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />
       {documentsTo && <SideLink to={documentsTo} label="Documents" icon={File} tone="slate" end />}

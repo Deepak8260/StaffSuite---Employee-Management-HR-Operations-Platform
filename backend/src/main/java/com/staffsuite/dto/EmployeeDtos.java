@@ -3,11 +3,15 @@ package com.staffsuite.dto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.staffsuite.dto.DocumentDtos.DocumentResponse;
+import com.staffsuite.dto.LeaveDtos.LeaveBalanceResponse;
+import com.staffsuite.entity.AttendanceStatus;
 import com.staffsuite.entity.EmploymentStatus;
 import com.staffsuite.entity.Role;
 
@@ -98,11 +102,54 @@ public final class EmployeeDtos {
             Long managerId,
             String managerName,
             boolean deleted,
+            /** API path the photo is served from, or null when the employee has no photo. */
+            String profilePhotoUrl,
             Instant createdAt,
             Instant updatedAt) {
     }
 
     /** Basic directory info visible to every authenticated user. */
     public record DirectoryEntry(Long id, String fullName, String jobTitle, String departmentName) {
+    }
+
+    /** One rejected row of a bulk upload; {@code row} is the spreadsheet row number (row 1 is the header). */
+    public record BulkUploadRowError(int row, String email, String fullName, String reason) {
+    }
+
+    public record BulkUploadResult(int totalRows, int created, int failed, List<BulkUploadRowError> errors) {
+    }
+
+    public record ProfileLeaveSummary(List<LeaveBalanceResponse> balances, long pendingRequests) {
+    }
+
+    /** Counts are days of the current month up to today; {@code todayStatus} is null when it cannot be derived. */
+    public record ProfileAttendanceSummary(String month, int present, int absent, int late, AttendanceStatus todayStatus) {
+    }
+
+    /**
+     * Everything the profile page shows. {@code accessLevel} is FULL for HR/Admin, the employee themself and their
+     * direct manager. Anyone else gets DIRECTORY, which carries only what the directory already shows (name, job title,
+     * department, photo); every other field is then null.
+     */
+    public record EmployeeProfile(
+            Long id,
+            String accessLevel,
+            String fullName,
+            String jobTitle,
+            String departmentName,
+            String profilePhotoUrl,
+            String employeeCode,
+            String email,
+            String phone,
+            LocalDate dateOfBirth,
+            LocalDate joiningDate,
+            EmploymentStatus employmentStatus,
+            String designationName,
+            Long managerId,
+            String managerName,
+            ProfileLeaveSummary leave,
+            ProfileAttendanceSummary attendance,
+            List<DocumentResponse> documents,
+            List<DirectoryEntry> directReports) {
     }
 }

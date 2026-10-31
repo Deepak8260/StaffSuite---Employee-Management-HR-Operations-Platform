@@ -275,6 +275,20 @@ public class LeaveRequestService {
         return PageResponse.of(page, this::toResponse);
     }
 
+    /** Pending requests of one employee; visible to HR/Admin, the employee and their direct manager. */
+    @Transactional(readOnly = true)
+    public long countPending(AuthenticatedUser actor, Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Employee not found"));
+        boolean self = employeeId.equals(actor.employeeId());
+        boolean directManager = employee.getManager() != null && employee.getManager().getId().equals(actor.employeeId());
+        if (!self && !directManager && !isHrOrAdmin(actor)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You are not allowed to view this employee's leave requests");
+        }
+        return requestRepository.count(Specification.allOf(
+                LeaveRequestSpecifications.ofEmployee(employeeId), LeaveRequestSpecifications.withStatus(LeaveStatus.PENDING)));
+    }
+
     /** Approved leave plus public holidays in a window, limited to the caller's scope. */
     @Transactional(readOnly = true)
     public CalendarResponse calendar(AuthenticatedUser actor, Scope requested, LocalDate from, LocalDate to) {

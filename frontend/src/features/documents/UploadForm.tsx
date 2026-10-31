@@ -138,6 +138,7 @@ export default function UploadForm({ employeeId, categories, allowVisibility, on
           title={`Preview: ${file.name}`}
           details="Not uploaded yet. Check the document, close this window, then click Upload."
           url={previewUrl}
+          fileName={file.name}
           onClose={closePreview}
         />
       )}

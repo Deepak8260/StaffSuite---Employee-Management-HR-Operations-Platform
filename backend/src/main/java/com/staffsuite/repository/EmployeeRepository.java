@@ -2,6 +2,7 @@ package com.staffsuite.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
             @Param("departmentId") Long departmentId);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    Optional<Employee> findByEmailIgnoreCase(String email);
 
     boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
 

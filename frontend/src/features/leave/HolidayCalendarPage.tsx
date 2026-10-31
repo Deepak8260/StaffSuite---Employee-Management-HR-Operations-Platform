@@ -90,7 +90,7 @@ export default function HolidayCalendarPage() {
               <strong>{year}</strong>
               <button onClick={() => setYear(year + 1)} aria-label="Next year">›</button>
               <button onClick={() => window.print()}>Print</button>
-              {canManageEmployees(user?.role) && <Link to="/admin/holidays" className="button">Manage holidays</Link>}
+              {canManageEmployees(user?.role) && <Link to="/admin/holidays" className="button secondary">Manage holidays</Link>}
             </>
           )} />
       </div>

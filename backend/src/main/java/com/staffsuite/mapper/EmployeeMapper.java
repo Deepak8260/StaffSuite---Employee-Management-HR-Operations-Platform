@@ -30,8 +30,14 @@ public class EmployeeMapper {
                 e.getManager() == null ? null : e.getManager().getId(),
                 e.getManager() == null ? null : e.getManager().getFullName(),
                 e.isDeleted(),
+                photoPath(e),
                 e.getCreatedAt(),
                 e.getUpdatedAt());
+    }
+
+    /** The photo is served by the API (it needs the login token), so the "url" is an API path, not a file location. */
+    public static String photoPath(Employee e) {
+        return e.getProfilePhotoUrl() == null ? null : "/api/v1/employees/" + e.getId() + "/photo";
     }
 
     public DirectoryEntry toDirectoryEntry(Employee e) {
