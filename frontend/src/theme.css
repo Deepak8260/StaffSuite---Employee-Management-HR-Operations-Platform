@@ -494,3 +494,12 @@ button.btn-primary:disabled { opacity: 0.55; cursor: default; }
 .contact-form .hint { margin: 0; font-size: 0.85rem; }
 .completion-list li a.button { margin-left: auto; padding: 0.2rem 0.7rem; font-size: 0.8rem; }
 .topbar-spacer { flex: 1; }
+
+/* three-dots row menu */
+.row-menu-btn { width: 2.1rem; height: 2.1rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: transparent; color: var(--text-2); cursor: pointer; }
+.row-menu-btn:hover, .row-menu-btn[aria-expanded='true'] { background: var(--surface-b); color: var(--text); }
+.row-menu { position: fixed; z-index: 90; text-align: left; width: 13rem; padding: 0.35rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(16, 24, 40, 0.18); display: grid; gap: 0.1rem; }
+.row-menu-item { display: flex; align-items: center; justify-content: flex-start; gap: 0.7rem; width: 100%; box-sizing: border-box; padding: 0.6rem 0.75rem; border: 0; border-radius: 8px; background: none; color: var(--text); font: inherit; font-weight: 500; text-align: left; text-decoration: none; cursor: pointer; }
+.row-menu-item:hover { background: var(--surface-b); }
+.row-menu-item.danger-item { color: #d33b2f; }
+.row-menu-item.danger-item:hover { background: rgba(211, 59, 47, 0.1); }

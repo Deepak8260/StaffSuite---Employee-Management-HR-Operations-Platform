@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { FileDown, FileSpreadsheet, Plus, Users } from 'lucide-react'
+import { ArrowLeftRight, Eye, FileDown, FileSpreadsheet, LogOut, Pencil, Plus, Users } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { exportEmployees, listDirectory, listEmployees, offboardEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
@@ -7,6 +7,7 @@ import Flash from '../../components/Flash'
 import Pager from '../../components/Pager'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
+import RowMenu from '../../components/ui/RowMenu'
 import SectionCard from '../../components/ui/SectionCard'
 import StatusPill, { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
@@ -15,6 +16,7 @@ import type { PageResponse } from '../../types/auth'
 import { ALL_STATUSES, type DirectoryEntry, type Employee, type EmployeeFilters, type EmploymentStatus } from '../../types/employee'
 import { canManageEmployees } from '../../utils/roles'
 import BulkUploadModal from './BulkUploadModal'
+import ReassignModal from './ReassignModal'
 
 const PAGE_SIZE = 10
 const MEMORY_KEY = 'staffsuite.employees.list'
@@ -55,6 +57,7 @@ export default function EmployeeListPage() {
   const [error, setError] = useState<string | null>(null)
   const [bulkOpen, setBulkOpen] = useState(false)
   const [offboarding, setOffboarding] = useState<Employee | null>(null)
+  const [reassigning, setReassigning] = useState<Employee | null>(null)
   const [busy, setBusy] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -161,12 +164,16 @@ export default function EmployeeListPage() {
         {e.deleted && <> <StatusPill tone="neutral">Offboarded</StatusPill></>}
       </>
     ) },
-    { key: 'actions', header: 'Actions', render: (e) => (e.deleted ? null : (
-      <span className="row-actions">
-        <Link to={`/employees/${e.id}/edit`} className="button secondary">Edit</Link>
-        {e.id !== user?.employeeId && <button type="button" className="danger" onClick={() => setOffboarding(e)}>Offboard</button>}
-      </span>
-    )) },
+    { key: 'actions', header: 'Actions', align: 'right', render: (e) => (
+      <RowMenu label={`Actions for ${e.fullName}`} items={[
+        { label: 'View Profile', icon: Eye, to: `/employees/${e.id}/profile` },
+        ...(e.deleted ? [] : [
+          { label: 'Edit Profile', icon: Pencil, to: `/employees/${e.id}/edit` },
+          { label: 'Change Department', icon: ArrowLeftRight, onSelect: () => setReassigning(e) },
+          ...(e.id !== user?.employeeId ? [{ label: 'Offboard', icon: LogOut, danger: true, onSelect: () => setOffboarding(e) }] : []),
+        ]),
+      ]} />
+    ) },
   ]
 
   const simpleColumns: Column<DirectoryEntry>[] = [
@@ -247,6 +254,8 @@ export default function EmployeeListPage() {
 
       <Flash message={exportError} kind="error" onDone={() => setExportError(null)} />
       {bulkOpen && <BulkUploadModal onClose={() => setBulkOpen(false)} onCreated={() => { setPage(0); void load() }} />}
+
+      {reassigning && <ReassignModal employee={reassigning} onClose={() => setReassigning(null)} onDone={() => { setReassigning(null); void load() }} />}
 
       {offboarding && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
