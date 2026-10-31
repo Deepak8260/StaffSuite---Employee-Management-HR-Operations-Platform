@@ -87,7 +87,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
                 <span className="hint">{user.email}</span>
                 <StatusPill tone="info">{ROLE_LABEL[user.role]} / {user.role}</StatusPill>
               </div>
-              {user.employeeId != null && <Link to="/my-profile" role="menuitem"><UserRound size={16} aria-hidden="true" /> My profile</Link>}
+              {user.employeeId != null && <Link to={`/employees/${user.employeeId}/profile`} role="menuitem"><UserRound size={16} aria-hidden="true" /> My profile</Link>}
               <Link to="/change-password" role="menuitem"><KeyRound size={16} aria-hidden="true" /> Change password</Link>
               <button type="button" role="menuitem" onClick={handleLogout}><LogOut size={16} aria-hidden="true" /> Log out</button>
             </div>

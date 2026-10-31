@@ -148,6 +148,8 @@ public final class EmployeeDtos {
             String employeeCode,
             String email,
             String phone,
+            String address,
+            String emergencyContact,
             LocalDate dateOfBirth,
             LocalDate joiningDate,
             EmploymentStatus employmentStatus,

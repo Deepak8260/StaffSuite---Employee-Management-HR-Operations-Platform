@@ -72,6 +72,7 @@ public class DocumentService {
     private final UserRepository userRepository;
     private final StorageService storage;
     private final AuditService auditService;
+    private final ProfileCompletionService profileCompletion;
     private final AppProperties props;
     private final Clock clock;
 
@@ -136,6 +137,9 @@ public class DocumentService {
         } catch (RuntimeException e) {
             removeQuietly(reference);   // do not leave an orphan file behind a failed insert
             throw e;
+        }
+        if (self) {
+            profileCompletion.afterOwnUpdate(employee);   // a document the employee uploaded may be the last missing item
         }
         auditService.log(actor.userId(), "DOCUMENT_UPLOADED", ENTITY, document.getId(), ip);
         return toResponses(List.of(document)).get(0);

@@ -72,6 +72,8 @@ export default function EmployeeProfilePage() {
   const menuRef = useRef<HTMLDivElement>(null)
   const [contact, setContact] = useState({ phone: '', address: '', emergencyContact: '' })
   const [savingContact, setSavingContact] = useState(false)
+  const [editingContact, setEditingContact] = useState(false)
+  const [contactForm, setContactForm] = useState({ phone: '', address: '', emergencyContact: '' })
   const [notice, setNotice] = useState<{ text: string; kind: 'success' | 'error' } | null>(null)
 
   const canManage = canManageEmployees(user?.role)
@@ -183,6 +185,30 @@ export default function EmployeeProfilePage() {
       setNotice({ text: errorMessage(err, 'Could not remove the photo'), kind: 'error' })
     } finally {
       setUploading(false)
+    }
+  }
+
+  function startEditingContact() {
+    setContactForm({ phone: current?.phone ?? '', address: current?.address ?? '', emergencyContact: current?.emergencyContact ?? '' })
+    setEditingContact(true)
+  }
+
+  async function saveContactForm(e: FormEvent) {
+    e.preventDefault()
+    setSavingContact(true)
+    try {
+      await updateOwnProfile(employeeId, {
+        phone: contactForm.phone.trim(),
+        address: contactForm.address.trim(),
+        emergencyContact: contactForm.emergencyContact.trim(),
+      })
+      setProfile(await getProfile(employeeId))
+      setEditingContact(false)
+      setNotice({ text: 'Details saved.', kind: 'success' })
+    } catch (err) {
+      setNotice({ text: errorMessage(err, 'Could not save your details'), kind: 'error' })
+    } finally {
+      setSavingContact(false)
     }
   }
 
@@ -322,6 +348,9 @@ export default function EmployeeProfilePage() {
                   {!i.done && i.key === 'photo' && canChangePhoto && (
                     <button type="button" className="secondary" onClick={() => fileInput.current?.click()}>Add photo</button>
                   )}
+                  {!i.done && i.key === 'documents' && (isSelf || canManage) && (
+                    <Link to={uploadHref} className="button secondary">Upload document</Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -338,11 +367,25 @@ export default function EmployeeProfilePage() {
       })()}
 
       <div className="profile-grid">
-        <SectionCard title="Contact & Employment" icon={Briefcase} tint="blue">
-          {full ? (
+        <SectionCard title="Contact & Employment" icon={Briefcase} tint="blue"
+          actions={full && isSelf && !editingContact ? <button type="button" className="secondary" onClick={startEditingContact}><Pencil size={15} aria-hidden="true" /> Edit</button> : undefined}>
+          {full && editingContact ? (
+            <form className="contact-form" onSubmit={saveContactForm}>
+              <label>Phone number<input value={contactForm.phone} maxLength={25} inputMode="tel" onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} /></label>
+              <label>Home address<input value={contactForm.address} maxLength={500} onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })} /></label>
+              <label>Emergency contact (name and number)<input value={contactForm.emergencyContact} maxLength={150} onChange={(e) => setContactForm({ ...contactForm, emergencyContact: e.target.value })} /></label>
+              <p className="hint">Email, job title, joining date and the other details are managed by HR.</p>
+              <div className="actions">
+                <button type="submit" className="btn-primary" disabled={savingContact}>{savingContact ? 'Saving…' : 'Save'}</button>
+                <button type="button" className="secondary" onClick={() => setEditingContact(false)} disabled={savingContact}>Cancel</button>
+              </div>
+            </form>
+          ) : full ? (
             <KeyValues rows={[
               ['Email', current.email ?? '—'],
               ['Phone', current.phone ?? '—'],
+              ['Home address', current.address ?? '—'],
+              ['Emergency contact', current.emergencyContact ?? '—'],
               ['Date of birth', formatDate(current.dateOfBirth)],
               ['Joining date', formatDate(current.joiningDate)],
               ['Designation', current.designationName ?? '—'],

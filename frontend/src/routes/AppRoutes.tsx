@@ -1,3 +1,4 @@
+import { useAuth } from '../hooks/useAuth'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProtectedRoute from '../components/ProtectedRoute'
@@ -17,7 +18,6 @@ import EmployeeDetailPage from '../features/employees/EmployeeDetailPage'
 import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
 import EmployeeProfilePage from '../features/employees/EmployeeProfilePage'
-import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
 import NotificationsPage from '../features/notifications/NotificationsPage'
 import HrDashboardPage from '../features/reports/HrDashboardPage'
@@ -31,6 +31,12 @@ import DepartmentsPage from '../features/organization/DepartmentsPage'
 import DesignationsPage from '../features/organization/DesignationsPage'
 import OrgChartPage from '../features/organization/OrgChartPage'
 import UserManagementPage from '../features/users/UserManagementPage'
+
+/** "My profile" is the same unified profile page everyone else sees, with the completion bar and photo options. */
+function MyProfileRedirect() {
+  const { user } = useAuth()
+  return <Navigate to={`/employees/${user?.employeeId}/profile`} replace />
+}
 
 function DirectoryRedirect() {
   const { search } = useLocation()
@@ -59,7 +65,7 @@ export default function AppRoutes() {
           path="/my-profile"
           element={
             <ProtectedRoute requireEmployee>
-              <MyProfilePage />
+              <MyProfileRedirect />
             </ProtectedRoute>
           }
         />

@@ -32,6 +32,7 @@ public class EmployeeProfileService {
     private final LeaveRequestService leaveRequestService;
     private final AttendanceService attendanceService;
     private final DocumentService documentService;
+    private final ProfileCompletionService completionService;
     private final Clock clock;
 
     public EmployeeProfile profile(AuthenticatedUser actor, Long id) {
@@ -39,15 +40,15 @@ public class EmployeeProfileService {
         EmployeeResponse e = basics.employee();
         if (!basics.full()) {
             return new EmployeeProfile(e.id(), "DIRECTORY", e.fullName(), e.jobTitle(), e.departmentName(),
-                    e.profilePhotoUrl(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                    e.profilePhotoUrl(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         }
         ProfileLeaveSummary leave = new ProfileLeaveSummary(
                 leaveBalanceService.getBalances(actor, id, null), leaveRequestService.countPending(actor, id));
         return new EmployeeProfile(e.id(), "FULL", e.fullName(), e.jobTitle(), e.departmentName(), e.profilePhotoUrl(),
-                e.employeeCode(), e.email(), e.phone(), e.dateOfBirth(), e.joiningDate(), e.employmentStatus(),
+                e.employeeCode(), e.email(), e.phone(), e.address(), e.emergencyContact(), e.dateOfBirth(), e.joiningDate(), e.employmentStatus(),
                 e.designationName(), e.managerId(), e.managerName(), leave, attendanceThisMonth(actor, id),
                 documentService.list(actor, id), employeeService.directReports(id),
-                ProfileCompletionService.of(e.profilePhotoUrl() != null, e.phone(), e.address(), e.emergencyContact()));
+                completionService.of(id, e.profilePhotoUrl() != null, e.phone(), e.address(), e.emergencyContact()));
     }
 
     /** Counts the status each day of this month (up to today) already has; the day rules live in AttendanceService. */

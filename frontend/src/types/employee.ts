@@ -104,7 +104,7 @@ export interface ProfileAttendanceSummary {
 }
 
 export interface ProfileCompletionItem {
-  key: 'photo' | 'phone' | 'address' | 'emergencyContact'
+  key: 'photo' | 'phone' | 'address' | 'emergencyContact' | 'documents'
   label: string
   done: boolean
 }
@@ -127,6 +127,8 @@ export interface EmployeeProfile {
   employeeCode: string | null
   email: string | null
   phone: string | null
+  address: string | null
+  emergencyContact: string | null
   dateOfBirth: string | null
   joiningDate: string | null
   employmentStatus: EmploymentStatus | null

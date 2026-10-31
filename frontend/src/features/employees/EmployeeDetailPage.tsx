@@ -94,7 +94,7 @@ export default function EmployeeDetailPage() {
           </div>
         </div>
         <div className="page-header-actions">
-          {isSelf && !employee.deleted && <Link to="/my-profile" className="button">Edit my profile</Link>}
+          {isSelf && !employee.deleted && <Link to={`/employees/${employee.id}/profile`} className="button">My profile</Link>}
           {canManage && !employee.deleted && (
             <Link to={`/employees/${employee.id}/edit`} className="button">Edit</Link>
           )}

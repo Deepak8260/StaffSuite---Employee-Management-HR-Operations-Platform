@@ -210,7 +210,7 @@ class EmployeeProfileTests {
             assertThat(p.get("fullName").asString()).isEqualTo("Asha Employee");
             assertThat(p.get("jobTitle").asString()).isEqualTo("Engineer");
             assertThat(p.get("departmentName").asString()).isEqualTo("Engineering");
-            for (String hidden : List.of("employeeCode", "email", "phone", "dateOfBirth", "joiningDate", "employmentStatus",
+            for (String hidden : List.of("employeeCode", "email", "phone", "address", "emergencyContact", "dateOfBirth", "joiningDate", "employmentStatus",
                     "designationName", "managerId", "managerName", "leave", "attendance", "documents", "directReports")) {
                 assertThat(p.get(hidden).isNull()).as(who + " must not see " + hidden).isTrue();
             }
@@ -303,13 +303,15 @@ class EmployeeProfileTests {
         JsonNode before = profile(bearer("a@test.com"), empA).get("completion");
         assertThat(before.get("percent").asInt()).isZero();
         assertThat(before.get("complete").asBoolean()).isFalse();
-        assertThat(before.get("items").size()).isEqualTo(4);
+        assertThat(before.get("items").size()).isEqualTo(5);
 
         saveContact(bearer("a@test.com"), empA, "9876543210", "12 Main Street", "Ravi 9123456780");
-        JsonNode half = profile(bearer("a@test.com"), empA).get("completion");
-        assertThat(half.get("percent").asInt()).isEqualTo(75);
+        assertThat(profile(bearer("a@test.com"), empA).get("completion").get("percent").asInt()).isEqualTo(60);
 
         photo(bearer("a@test.com"), empA, "me.png", PNG).andExpect(status().isOk());
+        assertThat(profile(bearer("a@test.com"), empA).get("completion").get("percent").asInt()).isEqualTo(80);
+
+        uploadDocument(bearer("a@test.com"), empA, "SELF_AND_HR");
         JsonNode full = profile(bearer("mgr@test.com"), empA).get("completion");
         assertThat(full.get("percent").asInt()).isEqualTo(100);
         assertThat(full.get("complete").asBoolean()).isTrue();
@@ -324,7 +326,9 @@ class EmployeeProfileTests {
         assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
         assertThat(completionMessages(bearer("admin@test.com"))).isEmpty();
 
-        photo(a, empA, "me.png", PNG).andExpect(status().isOk());      // the last missing item
+        photo(a, empA, "me.png", PNG).andExpect(status().isOk());
+        assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();      // still missing a document
+        uploadDocument(a, empA, "SELF_AND_HR");                                  // the last missing item
         assertThat(completionMessages(bearer("mgr@test.com"))).containsExactly("Asha Employee has completed their profile.");
         assertThat(completionMessages(bearer("admin@test.com"))).containsExactly("Asha Employee has completed their profile.");
         assertThat(completionMessages(bearer("hr@test.com"))).isEmpty();      // only the manager and system admins
@@ -334,6 +338,7 @@ class EmployeeProfileTests {
         // later edits never repeat it
         saveContact(a, empA, "1111111111", "New address", "Someone 222");
         photo(a, empA, "again.png", PNG).andExpect(status().isOk());
+        uploadDocument(a, empA, "SELF_AND_HR");
         assertThat(completionMessages(bearer("mgr@test.com"))).hasSize(1);
         assertThat(completionMessages(bearer("admin@test.com"))).hasSize(1);
     }
@@ -345,6 +350,7 @@ class EmployeeProfileTests {
         String s = bearer("sam@test.com");
         saveContact(s, solo, "9876543210", "1 Road", "Mum 5555");
         photo(s, solo, "me.png", PNG).andExpect(status().isOk());
+        uploadDocument(s, solo, "SELF_AND_HR");
         assertThat(completionMessages(bearer("admin@test.com"))).containsExactly("Sam Solo has completed their profile.");
         assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
     }
@@ -352,6 +358,7 @@ class EmployeeProfileTests {
     @Test
     void hrFinishingSomeonesPhotoDoesNotCountAsTheEmployeeCompletingIt() throws Exception {
         saveContact(bearer("a@test.com"), empA, "9876543210", "12 Main Street", "Ravi 9123456780");
+        uploadDocument(bearer("a@test.com"), empA, "SELF_AND_HR");
         photo(bearer("hr@test.com"), empA, "hr.png", PNG).andExpect(status().isOk());
         assertThat(profile(bearer("a@test.com"), empA).get("completion").get("percent").asInt()).isEqualTo(100);
         assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
@@ -382,5 +389,19 @@ class EmployeeProfileTests {
         photo(a, empA, "me.png", PNG).andExpect(status().isOk());
         mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", bearer("hr@test.com")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void addressAndEmergencyContactAreShownAndAnHrUploadedDocumentDoesNotTriggerTheNotification() throws Exception {
+        String a = bearer("a@test.com");
+        saveContact(a, empA, "9876543210", "12 Main Street", "Ravi 9123456780");
+        photo(a, empA, "me.png", PNG).andExpect(status().isOk());
+        JsonNode p = profile(a, empA);
+        assertThat(p.get("address").asString()).isEqualTo("12 Main Street");
+        assertThat(p.get("emergencyContact").asString()).isEqualTo("Ravi 9123456780");
+
+        uploadDocument(bearer("hr@test.com"), empA, "SELF_AND_HR");     // HR adds the last item
+        assertThat(profile(a, empA).get("completion").get("percent").asInt()).isEqualTo(100);
+        assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
     }
 }

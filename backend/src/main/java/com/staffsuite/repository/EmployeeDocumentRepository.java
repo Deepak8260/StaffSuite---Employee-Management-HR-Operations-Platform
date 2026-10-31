@@ -16,6 +16,8 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
     @EntityGraph(attributePaths = { "employee", "employee.department", "category" })
     List<EmployeeDocument> findByEmployee_IdOrderByCreatedAtDescIdDesc(Long employeeId);
 
+    boolean existsByEmployee_Id(Long employeeId);
+
     @EntityGraph(attributePaths = { "employee", "employee.department", "category" })
     Optional<EmployeeDocument> findWithDetailsById(Long id);
 
