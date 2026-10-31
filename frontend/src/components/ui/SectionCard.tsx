@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import type { Tint } from './tints'
 
 interface Props {
-  title: string
+  title?: string
   icon?: LucideIcon
   tint?: Tint
   /** Adds a "View all" link in the header. */
@@ -20,7 +20,7 @@ interface Props {
 export default function SectionCard({ title, icon: Icon, tint = 'blue', viewAllTo, viewAllLabel = 'View all', actions, children, className = '' }: Props) {
   return (
     <section className={`section-card ${className}`}>
-      <header className="section-head">
+      {(title || actions || viewAllTo) && <header className="section-head">
         <h2>
           {Icon && <span className={`icon-square sm tint-${tint}`}><Icon size={22} aria-hidden="true" /></span>}
           {title}
@@ -29,7 +29,7 @@ export default function SectionCard({ title, icon: Icon, tint = 'blue', viewAllT
           {actions}
           {viewAllTo && <Link className="view-all" to={viewAllTo}>{viewAllLabel}<ArrowRight size={15} aria-hidden="true" /></Link>}
         </div>
-      </header>
+      </header>}
       <div className="section-body">{children}</div>
     </section>
   )

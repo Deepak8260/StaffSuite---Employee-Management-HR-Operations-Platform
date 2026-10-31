@@ -59,6 +59,8 @@ export async function getBalances(employeeId: number, year?: number): Promise<Le
 export interface LeaveListParams {
   scope?: LeaveScope
   status?: LeaveStatus
+  /** Only with scope ALL (HR/Admin): one employee's requests. */
+  employeeId?: number
   page: number
   size: number
 }

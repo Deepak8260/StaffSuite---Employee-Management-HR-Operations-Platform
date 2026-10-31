@@ -4,6 +4,7 @@ import type {
   DirectoryEntry,
   Employee,
   EmployeeFilters,
+  EmployeeProfile,
   EmployeeInput,
   SelfProfileInput,
 } from '../types/employee'
@@ -87,4 +88,23 @@ export async function downloadBulkTemplate(): Promise<void> {
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+}
+
+export async function getProfile(id: number): Promise<EmployeeProfile> {
+  const { data } = await api.get<EmployeeProfile>(`${BASE}/${id}/profile`)
+  return data
+}
+
+/** HR/Admin or the employee themself. The backend accepts JPG and PNG up to 5 MB. */
+export async function uploadEmployeePhoto(id: number, file: File): Promise<Employee> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<Employee>(`${BASE}/${id}/photo`, form)
+  return data
+}
+
+/** The photo needs the login token, so it is fetched and shown from memory (the caller revokes the URL). */
+export async function fetchPhotoObjectUrl(id: number): Promise<string> {
+  const res = await api.get<Blob>(`${BASE}/${id}/photo`, { responseType: 'blob' })
+  return URL.createObjectURL(res.data)
 }

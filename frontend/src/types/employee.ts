@@ -1,3 +1,5 @@
+import type { EmployeeDocument } from './documents'
+import type { LeaveBalance } from './leave'
 import type { Role } from './auth'
 
 export type EmploymentStatus = 'ACTIVE' | 'ON_LEAVE' | 'PROBATION' | 'TERMINATED'
@@ -25,6 +27,7 @@ export interface Employee {
   managerId: number | null
   managerName: string | null
   deleted: boolean
+  profilePhotoUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -84,4 +87,40 @@ export interface BulkUploadResult {
   created: number
   failed: number
   errors: BulkUploadRowError[]
+}
+
+export interface ProfileLeaveSummary {
+  balances: LeaveBalance[]
+  pendingRequests: number
+}
+
+export interface ProfileAttendanceSummary {
+  month: string
+  present: number
+  absent: number
+  late: number
+  todayStatus: string | null
+}
+
+/** FULL for HR/Admin, the employee and their direct manager; DIRECTORY (name, title, department, photo only) for anyone else. */
+export interface EmployeeProfile {
+  id: number
+  accessLevel: 'FULL' | 'DIRECTORY'
+  fullName: string
+  jobTitle: string
+  departmentName: string | null
+  profilePhotoUrl: string | null
+  employeeCode: string | null
+  email: string | null
+  phone: string | null
+  dateOfBirth: string | null
+  joiningDate: string | null
+  employmentStatus: EmploymentStatus | null
+  designationName: string | null
+  managerId: number | null
+  managerName: string | null
+  leave: ProfileLeaveSummary | null
+  attendance: ProfileAttendanceSummary | null
+  documents: EmployeeDocument[] | null
+  directReports: DirectoryEntry[] | null
 }

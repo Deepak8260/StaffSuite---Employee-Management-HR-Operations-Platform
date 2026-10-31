@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -58,6 +59,10 @@ public class EmployeeService {
     private final AuditService auditService;
     private final EmployeeMapper mapper;
     private final LeaveBalanceService leaveBalanceService;
+
+    /** The employee as the profile page may show them: {@code full} is false for directory-level viewers. */
+    public record ProfileEmployee(EmployeeResponse employee, boolean full) {
+    }
 
     // ------------------------------------------------------------------ queries
 
@@ -119,6 +124,27 @@ public class EmployeeService {
             throw new ApiException(HttpStatus.NOT_FOUND, "Employee not found");
         }
         return mapper.toResponse(employee);
+    }
+
+    /** Same visibility as everywhere else: HR/Admin, the employee and their direct manager see everything. */
+    @Transactional(readOnly = true)
+    public ProfileEmployee getForProfile(AuthenticatedUser actor, Long id) {
+        Employee employee = find(id);
+        boolean privileged = isHrOrAdmin(actor);
+        boolean self = id.equals(actor.employeeId());
+        boolean directManager = employee.getManager() != null && employee.getManager().getId().equals(actor.employeeId());
+        if (employee.isDeleted() && !privileged) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Employee not found");
+        }
+        return new ProfileEmployee(mapper.toResponse(employee), privileged || self || directManager);
+    }
+
+    /** Current (not offboarded) people reporting directly to this employee, by name. */
+    @Transactional(readOnly = true)
+    public List<DirectoryEntry> directReports(Long managerId) {
+        Specification<Employee> spec = Specification.allOf(
+                EmployeeSpecifications.notDeleted(), EmployeeSpecifications.managedBy(managerId));
+        return employeeRepository.findAll(spec, Sort.by("fullName")).stream().map(mapper::toDirectoryEntry).toList();
     }
 
     @Transactional(readOnly = true)

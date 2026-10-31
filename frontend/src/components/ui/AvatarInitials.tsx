@@ -1,6 +1,6 @@
 interface Props {
   name: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
 export function initialsOf(name: string): string {

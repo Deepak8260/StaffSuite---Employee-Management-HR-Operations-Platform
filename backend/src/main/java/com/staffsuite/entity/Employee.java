@@ -79,6 +79,10 @@ public class Employee {
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
+    /** Storage reference of the profile photo (never the image itself); null when there is none. */
+    @Column(name = "profile_photo_url", length = 500)
+    private String profilePhotoUrl;
+
     /** Soft delete: set when offboarded. The row and everything pointing at it is retained. */
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;

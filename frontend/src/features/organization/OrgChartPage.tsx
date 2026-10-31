@@ -47,7 +47,7 @@ function OrgTreeNode({ node, collapsed, onToggle, linkable }: NodeProps) {
         <span className="person">
           <AvatarInitials name={node.fullName} size="sm" />
           <span className="person-text">
-            <strong className="person-name">{linkable(node.id) ? <Link to={`/employees/${node.id}`}>{node.fullName}</Link> : node.fullName}</strong>
+            <strong className="person-name">{linkable(node.id) ? <Link to={`/employees/${node.id}/profile`}>{node.fullName}</Link> : node.fullName}</strong>
             <span className="org-meta person-meta">
               {node.jobTitle}
               {node.departmentName ? ` · ${node.departmentName}` : ''}

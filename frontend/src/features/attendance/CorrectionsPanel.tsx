@@ -1,3 +1,4 @@
+import EmployeeLink from '../../components/ui/EmployeeLink'
 import { ClipboardCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -88,7 +89,7 @@ export default function CorrectionsPanel({ scope }: Props) {
         <div className="person">
           <AvatarInitials name={c.employeeName} size="sm" />
           <div className="person-text">
-            <span className="person-name">{c.employeeName}</span>
+            <EmployeeLink id={c.employeeId} className="person-name">{c.employeeName}</EmployeeLink>
             <span className="person-meta">{c.employeeCode}</span>
           </div>
         </div>

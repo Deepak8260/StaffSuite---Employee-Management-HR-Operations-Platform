@@ -1,3 +1,4 @@
+import EmployeeLink from '../../components/ui/EmployeeLink'
 import {
   ArrowUp, CalendarCheck, CalendarDays, CalendarOff, FileText, Hourglass, Plane, Upload, UserPlus, Users, Zap,
 } from 'lucide-react'
@@ -133,7 +134,7 @@ function LeaveRequestsCard({ requests, viewAllTo, error }: { requests: LeaveRequ
               <li key={l.id}>
                 <AvatarInitials name={l.employeeName} />
                 <span className="grow">
-                  <span className="person-name">{l.employeeName}</span>
+                  <EmployeeLink id={l.employeeId} className="person-name">{l.employeeName}</EmployeeLink>
                   <span className="person-meta">{l.leaveTypeName}</span>
                 </span>
                 <span className="when">{dateRange(l)}</span>
@@ -186,7 +187,7 @@ function AdminHome() {
     const pct = (n: number, of: number) => (of > 0 ? `${Math.round((n / of) * 100)}%` : '0%')
 
   const columns: Column<EmployeeDocument>[] = [
-    { key: 'emp', header: 'Employee', render: (d) => <strong>{d.employeeName}</strong> },
+    { key: 'emp', header: 'Employee', render: (d) => <strong><EmployeeLink id={d.employeeId}>{d.employeeName}</EmployeeLink></strong> },
     { key: 'doc', header: 'Document', render: (d) => d.fileName },
     { key: 'type', header: 'Type', render: (d) => d.categoryName },
     { key: 'status', header: 'Status', render: (d) => d.expired

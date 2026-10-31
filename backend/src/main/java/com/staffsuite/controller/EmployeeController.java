@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.staffsuite.dto.EmployeeDtos.BulkUploadResult;
 import com.staffsuite.dto.EmployeeDtos.DirectoryEntry;
+import com.staffsuite.dto.EmployeeDtos.EmployeeProfile;
 import com.staffsuite.dto.EmployeeDtos.EmployeeRequest;
 import com.staffsuite.dto.EmployeeDtos.EmployeeResponse;
 import com.staffsuite.dto.EmployeeDtos.SelfProfileRequest;
@@ -31,6 +32,9 @@ import com.staffsuite.dto.PageResponse;
 import com.staffsuite.entity.EmploymentStatus;
 import com.staffsuite.security.AuthenticatedUser;
 import com.staffsuite.service.EmployeeBulkImportService;
+import com.staffsuite.service.EmployeePhotoService;
+import com.staffsuite.service.EmployeePhotoService.Photo;
+import com.staffsuite.service.EmployeeProfileService;
 import com.staffsuite.service.EmployeeService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +52,8 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
     private final EmployeeBulkImportService bulkImportService;
+    private final EmployeeProfileService profileService;
+    private final EmployeePhotoService photoService;
 
     private static Pageable pageable(int page, int size, Sort sort) {
         return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE), sort);
@@ -78,6 +84,28 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public EmployeeResponse get(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id) {
         return employeeService.get(actor, id);
+    }
+
+    /** Everything for the profile page in one call; directory-level viewers get a reduced version. */
+    @GetMapping("/{id}/profile")
+    public EmployeeProfile profile(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id) {
+        return profileService.profile(actor, id);
+    }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<org.springframework.core.io.Resource> photo(@AuthenticationPrincipal AuthenticatedUser actor,
+            @PathVariable Long id) {
+        Photo photo = photoService.load(actor, id);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(photo.contentType()))
+                .header(HttpHeaders.CACHE_CONTROL, "private, no-cache")
+                .header("X-Content-Type-Options", "nosniff")
+                .body(photo.resource());
+    }
+
+    @PostMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public EmployeeResponse uploadPhoto(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id,
+            @RequestPart("file") MultipartFile file, HttpServletRequest http) {
+        return photoService.upload(actor, id, file, http.getRemoteAddr());
     }
 
     @GetMapping("/{id}/team")

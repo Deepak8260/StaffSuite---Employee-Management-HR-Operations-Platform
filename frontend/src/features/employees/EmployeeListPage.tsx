@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { FileSpreadsheet, Plus, Users } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { listDirectory, listEmployees, offboardEmployee } from '../../api/employees'
@@ -17,6 +17,19 @@ import { canManageEmployees } from '../../utils/roles'
 import BulkUploadModal from './BulkUploadModal'
 
 const PAGE_SIZE = 10
+const MEMORY_KEY = 'staffsuite.employees.list'
+
+interface Remembered { applied: EmployeeFilters; page: number }
+
+/** The list's last filters and page, kept for the session so "Back to Employees" lands where you left. */
+function recall(fromUrl: string): Remembered | null {
+  if (fromUrl) return null
+  try {
+    return JSON.parse(sessionStorage.getItem(MEMORY_KEY) ?? 'null') as Remembered | null
+  } catch {
+    return null
+  }
+}
 
 /**
  * One Employees page for everyone. Admin and HR get the full management view (GET /employees); other roles get the
@@ -29,27 +42,41 @@ export default function EmployeeListPage() {
   const [params] = useSearchParams()
   const fromUrl = params.get('q') ?? ''
 
-  const [departmentId, setDepartmentId] = useState('')
-  const [status, setStatus] = useState('')
-  const [managerId, setManagerId] = useState('')
-  const [search, setSearch] = useState(fromUrl)
-  const [includeOffboarded, setIncludeOffboarded] = useState(false)
+  const remembered = useRef(recall(fromUrl)).current
+  const [departmentId, setDepartmentId] = useState(remembered?.applied.departmentId ? String(remembered.applied.departmentId) : '')
+  const [status, setStatus] = useState<string>(remembered?.applied.status ?? '')
+  const [managerId, setManagerId] = useState(remembered?.applied.managerId ? String(remembered.applied.managerId) : '')
+  const [search, setSearch] = useState(fromUrl || (remembered?.applied.q ?? ''))
+  const [includeOffboarded, setIncludeOffboarded] = useState(Boolean(remembered?.applied.includeOffboarded))
   // Filters are applied on submit so typing in the search box does not fire a request per keystroke.
-  const [applied, setApplied] = useState<EmployeeFilters>(fromUrl ? { q: fromUrl } : {})
-  const [page, setPage] = useState(0)
+  const [applied, setApplied] = useState<EmployeeFilters>(fromUrl ? { q: fromUrl } : (remembered?.applied ?? {}))
+  const [page, setPage] = useState(remembered?.page ?? 0)
   const [data, setData] = useState<PageResponse<Employee | DirectoryEntry> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [bulkOpen, setBulkOpen] = useState(false)
   const [offboarding, setOffboarding] = useState<Employee | null>(null)
   const [busy, setBusy] = useState(false)
 
-  // a new search from the top bar replaces whatever was typed here
+  // a new search from the top bar replaces whatever was typed here (but not the state restored on first load)
+  const first = useRef(true)
   useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearch(fromUrl)
     setApplied(fromUrl ? { q: fromUrl } : {})
     setPage(0)
   }, [fromUrl])
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(MEMORY_KEY, JSON.stringify({ applied, page } satisfies Remembered))
+    } catch {
+      /* not remembered */
+    }
+  }, [applied, page])
 
   const load = useCallback(async () => {
     try {
@@ -107,7 +134,7 @@ export default function EmployeeListPage() {
   const manageColumns: Column<Employee>[] = [
     { key: 'code', header: 'Code', render: (e) => e.employeeCode },
     { key: 'name', header: 'Name', render: (e) => (
-      <Link to={`/employees/${e.id}`} className="person">
+      <Link to={`/employees/${e.id}/profile`} className="person">
         <AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span>
       </Link>
     ) },
@@ -130,7 +157,7 @@ export default function EmployeeListPage() {
 
   const simpleColumns: Column<DirectoryEntry>[] = [
     { key: 'name', header: 'Name', render: (e) => (
-      <span className="person"><AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span></span>
+      <Link to={`/employees/${e.id}/profile`} className="person"><AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span></Link>
     ) },
     { key: 'title', header: 'Job title', render: (e) => e.jobTitle },
     { key: 'dept', header: 'Department', render: (e) => e.departmentName ?? '—' },

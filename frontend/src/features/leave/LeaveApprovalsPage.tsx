@@ -1,3 +1,4 @@
+import EmployeeLink from '../../components/ui/EmployeeLink'
 import { ClipboardCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -31,7 +32,9 @@ export default function LeaveApprovalsPage({ scope }: Props) {
   // arriving from a notification (?request=ID): show all statuses and highlight that request
   const [params] = useSearchParams()
   const highlight = Number(params.get('request')) || null
-  const [status, setStatus] = useState<LeaveStatus | ''>(highlight ? '' : 'PENDING')
+  // arriving from a profile (?employee=ID, HR/Admin): only that person's requests
+  const employeeFilter = scope === 'ALL' ? Number(params.get('employee')) || undefined : undefined
+  const [status, setStatus] = useState<LeaveStatus | ''>(highlight || employeeFilter ? '' : 'PENDING')
   const [page, setPage] = useState(0)
   const [data, setData] = useState<PageResponse<LeaveRequest> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -42,12 +45,12 @@ export default function LeaveApprovalsPage({ scope }: Props) {
 
   const load = useCallback(async () => {
     try {
-      setData(await listLeaveRequests({ scope, status: status || undefined, page, size: PAGE_SIZE }))
+      setData(await listLeaveRequests({ scope, status: status || undefined, employeeId: employeeFilter, page, size: PAGE_SIZE }))
       setError(null)
     } catch (err) {
       setError(errorMessage(err, 'Could not load leave requests'))
     }
-  }, [scope, status, page])
+  }, [scope, status, page, employeeFilter])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -91,7 +94,7 @@ export default function LeaveApprovalsPage({ scope }: Props) {
   const columns: Column<LeaveRequest>[] = [
     { key: 'employee', header: 'Employee', render: (r) => (
       <span className="person"><AvatarInitials name={r.employeeName} size="sm" />
-        <span><span className="person-name">{r.employeeName}</span><br /><span className="person-meta">{r.employeeCode}</span></span></span>
+        <span><EmployeeLink id={r.employeeId} className="person-name">{r.employeeName}</EmployeeLink><br /><span className="person-meta">{r.employeeCode}</span></span></span>
     ) },
     { key: 'type', header: 'Type', render: (r) => r.leaveTypeName },
     { key: 'dates', header: 'Dates', render: (r) => `${formatDateOnly(r.startDate)} – ${formatDateOnly(r.endDate)}` },

@@ -389,3 +389,57 @@ a.button.secondary:hover { background: var(--surface-b); border-color: var(--bor
 @media (max-width: 900px) and (max-height: 600px) {
   .auth-hero { display: none; }
 }
+
+/* employee names that link to the profile */
+a.employee-link { color: inherit; text-decoration: none; font-weight: inherit; }
+a.employee-link:hover { color: var(--primary); text-decoration: underline; }
+
+/* unified employee profile */
+.avatar-xl { width: 7.5rem; height: 7.5rem; font-size: 2.4rem; }
+.profile-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.back-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-2); text-decoration: none; font-weight: 500; }
+.back-link:hover { color: var(--primary); }
+.profile-head { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1.75rem; align-items: center; }
+.profile-photo { position: relative; width: 7.5rem; height: 7.5rem; }
+.photo-avatar { display: block; width: 7.5rem; height: 7.5rem; border-radius: 50%; object-fit: cover; }
+.photo-edit { position: absolute; right: 0; bottom: 0; width: 2.1rem; height: 2.1rem; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--border-strong); color: var(--text); box-shadow: 0 1px 4px rgba(16, 24, 40, 0.2); }
+.photo-edit:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); }
+.profile-head-text h1 { margin: 0; font-size: 1.8rem; }
+.profile-title { margin: 0.15rem 0 0.7rem; color: var(--muted); font-size: 1.05rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.chip { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 6px; background: var(--surface-b); color: var(--text-2); font-size: 0.8rem; font-weight: 500; }
+.reports-to { margin: 0.8rem 0 0; color: var(--muted); }
+.reports-to a { font-weight: 600; }
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; align-items: start; margin-bottom: 1.25rem; }
+.profile-grid > .section-card { margin: 0; min-width: 0; }
+.profile-page > .section-card { margin-bottom: 1.25rem; }
+.kv { margin: 0; display: grid; gap: 0.15rem; }
+.kv > div { display: grid; grid-template-columns: minmax(7rem, 38%) minmax(0, 1fr); gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+.kv > div:last-child { border-bottom: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+.mini-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem; }
+.mini-stats .stat-card { padding: 0.8rem; }
+.mini-stats .icon-square { width: 2.6rem; height: 2.6rem; }
+.card-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 1rem 0 0; color: var(--text-2); }
+.card-link { margin-left: auto; font-weight: 600; text-decoration: none; }
+.card-link:hover { text-decoration: underline; }
+.profile-note { display: flex; align-items: center; gap: 0.4rem; }
+.skeleton-line { display: block; height: 0.85rem; margin: 0.7rem 0; border-radius: 6px; background: linear-gradient(90deg, var(--surface-b) 25%, var(--border) 50%, var(--surface-b) 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite linear; }
+.skeleton-line.tall { height: 1.4rem; }
+.skeleton-circle { width: 7.5rem; height: 7.5rem; border-radius: 50%; background: linear-gradient(90deg, var(--surface-b) 25%, var(--border) 50%, var(--surface-b) 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite linear; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@media (max-width: 960px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .profile-head { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1rem; }
+  .chips { justify-content: center; }
+  .profile-bar { flex-wrap: wrap; }
+  .kv > div { grid-template-columns: 1fr; gap: 0.1rem; }
+  .card-link { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .skeleton-line, .skeleton-circle { animation: none; } }
+/* the documents table is wider than half a page: keep it tidy and let it scroll sideways inside its card */
+.profile-docs .section-body { overflow-x: auto; }
+.profile-docs th, .profile-docs td { white-space: nowrap; padding: 0.55rem 0.7rem; }

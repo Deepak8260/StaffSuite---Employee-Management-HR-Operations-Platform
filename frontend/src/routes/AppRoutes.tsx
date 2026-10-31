@@ -16,6 +16,7 @@ import MyDocumentsPage from '../features/documents/MyDocumentsPage'
 import EmployeeDetailPage from '../features/employees/EmployeeDetailPage'
 import EmployeeFormPage from '../features/employees/EmployeeFormPage'
 import EmployeeListPage from '../features/employees/EmployeeListPage'
+import EmployeeProfilePage from '../features/employees/EmployeeProfilePage'
 import MyProfilePage from '../features/employees/MyProfilePage'
 import HomePage from '../features/home/HomePage'
 import NotificationsPage from '../features/notifications/NotificationsPage'
@@ -63,6 +64,7 @@ export default function AppRoutes() {
           }
         />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+        <Route path="/employees/:id/profile" element={<EmployeeProfilePage />} />
         <Route path="/org-chart" element={<OrgChartPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route
