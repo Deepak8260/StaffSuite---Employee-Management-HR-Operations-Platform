@@ -6,6 +6,7 @@ export type NotificationType =
   | 'ATTENDANCE_CORRECTION_APPROVED'
   | 'ATTENDANCE_CORRECTION_REJECTED'
   | 'DOCUMENT_EXPIRING'
+  | 'PROFILE_COMPLETED'
 
 export interface NotificationItem {
   id: number

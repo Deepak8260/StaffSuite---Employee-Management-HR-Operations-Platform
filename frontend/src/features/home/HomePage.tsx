@@ -1,3 +1,4 @@
+import ProfileCompletionBanner from '../../components/ProfileCompletionBanner'
 import EmployeeLink from '../../components/ui/EmployeeLink'
 import {
   ArrowUp, CalendarCheck, CalendarDays, CalendarOff, FileText, Hourglass, Plane, Upload, UserPlus, Users, Zap,
@@ -87,6 +88,8 @@ export default function HomePage() {
           <BuildingArt className="banner-art" />
         </div>
       </div>
+
+      <ProfileCompletionBanner />
 
       {canManageEmployees(user?.role) && <AdminHome />}
       {user?.role === 'MANAGER' && user.employeeId != null && <ManagerHome employeeId={user.employeeId} />}

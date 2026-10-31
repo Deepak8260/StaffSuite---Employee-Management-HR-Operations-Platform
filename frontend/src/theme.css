@@ -443,3 +443,49 @@ a.employee-link:hover { color: var(--primary); text-decoration: underline; }
 /* the documents table is wider than half a page: keep it tidy and let it scroll sideways inside its card */
 .profile-docs .section-body { overflow-x: auto; }
 .profile-docs th, .profile-docs td { white-space: nowrap; padding: 0.55rem 0.7rem; }
+
+/* profile completion */
+.progress { flex: 1; height: 0.7rem; border-radius: 999px; background: var(--surface-b); overflow: hidden; }
+.progress > span { display: block; height: 100%; border-radius: 999px; background: var(--primary); transition: width 0.3s; }
+.progress > span.done { background: #16a36a; }
+.progress.small { height: 0.45rem; margin-top: 0.4rem; }
+.completion-top { display: flex; align-items: center; gap: 1rem; }
+.completion-percent { font-size: 1.3rem; min-width: 3.2rem; text-align: right; }
+.completion-hint { margin: 0.6rem 0 0.9rem; }
+.completion-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.5rem 1.5rem; }
+.completion-list li { display: flex; align-items: center; gap: 0.55rem; color: var(--text-2); }
+.completion-list li svg { flex: none; color: var(--muted); }
+.completion-list li.done { color: var(--text); }
+.completion-list li.done svg { color: #16a36a; }
+.completion-list li button { margin-left: auto; padding: 0.2rem 0.7rem; font-size: 0.8rem; }
+.completion-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.9rem; align-items: end; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+.completion-form label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.88rem; color: var(--text-2); }
+.completion-form button { justify-self: start; }
+.completion-banner { display: flex; align-items: center; gap: 1rem; margin: 0 0 1.25rem; padding: 0.9rem 1.1rem; border-radius: var(--radius); background: var(--primary-soft); border: 1px solid var(--border); color: var(--text); }
+.completion-banner > svg { flex: none; color: var(--primary); }
+.completion-banner-text { flex: 1; min-width: 0; }
+@media (max-width: 640px) { .completion-banner { flex-wrap: wrap; } .completion-banner .button { width: 100%; } }
+
+/* photo editor */
+.modal.photo-editor { position: relative; width: min(30rem, 100%); max-width: 30rem; }
+.editor-stage { position: relative; margin: 0.75rem auto 1rem; border-radius: 10px; overflow: hidden; background: #fff; max-width: 100%; touch-action: none; }
+.editor-stage canvas { display: block; cursor: grab; max-width: 100%; }
+.editor-stage canvas:active { cursor: grabbing; }
+.editor-ring { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 999px rgba(15, 23, 42, 0.5); pointer-events: none; outline: 2px solid #fff; outline-offset: -2px; }
+.editor-controls { display: grid; gap: 0.6rem; }
+.editor-slider { display: grid; gap: 0.15rem; font-size: 0.85rem; color: var(--text-2); }
+.editor-slider > span { display: flex; justify-content: space-between; }
+.editor-slider input[type='range'] { width: 100%; padding: 0; border: 0; box-shadow: none; accent-color: var(--primary); }
+.editor-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+button.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+button.btn-primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }
+button.btn-primary:disabled { opacity: 0.55; cursor: default; }
+
+/* photo options menu and viewer */
+.photo-open { display: block; padding: 0; border: 0; border-radius: 50%; background: none; cursor: zoom-in; }
+.photo-menu { position: absolute; z-index: 20; top: calc(100% + 0.4rem); left: 0; min-width: 12.5rem; padding: 0.35rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); box-shadow: 0 10px 28px rgba(16, 24, 40, 0.18); display: grid; gap: 0.1rem; }
+.photo-menu button { width: 100%; justify-content: flex-start; border: 0; background: none; padding: 0.55rem 0.7rem; border-radius: 8px; font-weight: 500; text-align: left; }
+.photo-menu button:hover { background: var(--surface-b); }
+.photo-menu .danger-item { color: #d33b2f; }
+.modal.photo-view { position: relative; width: auto; max-width: min(90vw, 40rem); padding: 1rem; }
+.modal.photo-view img { display: block; max-width: 100%; max-height: 80vh; margin: 0 auto; border-radius: 8px; }

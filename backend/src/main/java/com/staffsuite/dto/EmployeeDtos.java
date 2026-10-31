@@ -119,6 +119,13 @@ public final class EmployeeDtos {
     public record BulkUploadResult(int totalRows, int created, int failed, List<BulkUploadRowError> errors) {
     }
 
+    public record ProfileCompletionItem(String key, String label, boolean done) {
+    }
+
+    /** What the employee can still fill in. {@code percent} is 0-100. */
+    public record ProfileCompletion(int percent, boolean complete, List<ProfileCompletionItem> items) {
+    }
+
     public record ProfileLeaveSummary(List<LeaveBalanceResponse> balances, long pendingRequests) {
     }
 
@@ -150,6 +157,7 @@ public final class EmployeeDtos {
             ProfileLeaveSummary leave,
             ProfileAttendanceSummary attendance,
             List<DocumentResponse> documents,
-            List<DirectoryEntry> directReports) {
+            List<DirectoryEntry> directReports,
+            ProfileCompletion completion) {
     }
 }

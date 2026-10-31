@@ -108,3 +108,9 @@ export async function fetchPhotoObjectUrl(id: number): Promise<string> {
   const res = await api.get<Blob>(`${BASE}/${id}/photo`, { responseType: 'blob' })
   return URL.createObjectURL(res.data)
 }
+
+/** HR/Admin or the employee themself. */
+export async function removeEmployeePhoto(id: number): Promise<Employee> {
+  const { data } = await api.delete<Employee>(`${BASE}/${id}/photo`)
+  return data
+}

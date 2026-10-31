@@ -39,6 +39,7 @@ public class EmployeePhotoService {
     private final StorageService storage;
     private final AuditService auditService;
     private final EmployeeMapper mapper;
+    private final ProfileCompletionService profileCompletion;
 
     /** HR/Admin or the employee themself; JPEG and PNG only, judged from the file's own bytes. */
     @Transactional
@@ -77,7 +78,32 @@ public class EmployeePhotoService {
                 // an orphaned old file is harmless; the new photo is already in place
             }
         }
+        if (employeeId.equals(actor.employeeId())) {
+            profileCompletion.afterOwnUpdate(employee);   // HR changing someone's photo is not the employee completing it
+        }
         auditService.log(actor.userId(), "EMPLOYEE_PHOTO_UPDATED", "EMPLOYEE", employeeId, ip);
+        return mapper.toResponse(employee);
+    }
+
+    /** HR/Admin or the employee themself. Removing a photo that is not there is not an error. */
+    @Transactional
+    public EmployeeResponse remove(AuthenticatedUser actor, Long employeeId, String ip) {
+        if (!isHrOrAdmin(actor) && !employeeId.equals(actor.employeeId())) {
+            throw new AccessDeniedException("You can only change your own photo");
+        }
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Employee not found"));
+        String previous = employee.getProfilePhotoUrl();
+        if (previous != null) {
+            employee.setProfilePhotoUrl(null);
+            employeeRepository.saveAndFlush(employee);
+            try {
+                storage.delete(previous);
+            } catch (StorageException ignored) {
+                // the reference is already gone; a leftover file is harmless
+            }
+            auditService.log(actor.userId(), "EMPLOYEE_PHOTO_REMOVED", "EMPLOYEE", employeeId, ip);
+        }
         return mapper.toResponse(employee);
     }
 

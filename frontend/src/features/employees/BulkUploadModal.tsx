@@ -116,7 +116,7 @@ export default function BulkUploadModal({ onClose, onCreated }: Props) {
         <div className="actions">
           {result
             ? <button type="button" onClick={reset}>Upload another file</button>
-            : <button type="button" onClick={upload} disabled={!file || busy}>{busy ? 'Uploading…' : 'Upload'}</button>}
+            : <button type="button" className="btn-primary" onClick={upload} disabled={!file || busy}>{busy ? 'Uploading…' : 'Upload'}</button>}
         </div>
       </div>
     </div>

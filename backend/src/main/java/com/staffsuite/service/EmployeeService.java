@@ -59,6 +59,7 @@ public class EmployeeService {
     private final AuditService auditService;
     private final EmployeeMapper mapper;
     private final LeaveBalanceService leaveBalanceService;
+    private final ProfileCompletionService profileCompletion;
 
     /** The employee as the profile page may show them: {@code full} is false for directory-level viewers. */
     public record ProfileEmployee(EmployeeResponse employee, boolean full) {
@@ -240,6 +241,7 @@ public class EmployeeService {
         if (request.getEmergencyContact() != null) {
             employee.setEmergencyContact(blankToNull(request.getEmergencyContact()));
         }
+        profileCompletion.afterOwnUpdate(employee);
         auditService.log(actor.userId(), "EMPLOYEE_PROFILE_UPDATED", ENTITY, id, ip);
         return mapper.toResponse(employee);
     }

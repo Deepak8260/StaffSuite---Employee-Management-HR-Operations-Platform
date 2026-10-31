@@ -1,9 +1,11 @@
 package com.staffsuite;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
@@ -272,6 +274,113 @@ class EmployeeProfileTests {
         mvc.perform(get("/api/v1/employees/" + empB.getId() + "/profile").header("Authorization", bearer("a@test.com")))
                 .andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/employees/" + empB.getId() + "/profile").header("Authorization", bearer("hr@test.com")))
+                .andExpect(status().isOk());
+    }
+
+    // ------------------------------------------------------- profile completion
+
+    private void saveContact(String token, Employee target, String phone, String address, String emergency) throws Exception {
+        mvc.perform(put("/api/v1/employees/" + target.getId() + "/profile").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"phone\":\"" + phone + "\",\"address\":\"" + address + "\",\"emergencyContact\":\"" + emergency + "\"}"))
+                .andExpect(status().isOk());
+    }
+
+    private List<String> completionMessages(String token) throws Exception {
+        JsonNode page = json.readTree(mvc.perform(get("/api/v1/notifications?size=50").header("Authorization", token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        List<String> out = new ArrayList<>();
+        page.get("content").forEach(n -> {
+            if (n.get("type").asString().equals("PROFILE_COMPLETED")) {
+                out.add(n.get("message").asString());
+            }
+        });
+        return out;
+    }
+
+    @Test
+    void completionBarCountsWhatTheEmployeeCanFillIn() throws Exception {
+        JsonNode before = profile(bearer("a@test.com"), empA).get("completion");
+        assertThat(before.get("percent").asInt()).isZero();
+        assertThat(before.get("complete").asBoolean()).isFalse();
+        assertThat(before.get("items").size()).isEqualTo(4);
+
+        saveContact(bearer("a@test.com"), empA, "9876543210", "12 Main Street", "Ravi 9123456780");
+        JsonNode half = profile(bearer("a@test.com"), empA).get("completion");
+        assertThat(half.get("percent").asInt()).isEqualTo(75);
+
+        photo(bearer("a@test.com"), empA, "me.png", PNG).andExpect(status().isOk());
+        JsonNode full = profile(bearer("mgr@test.com"), empA).get("completion");
+        assertThat(full.get("percent").asInt()).isEqualTo(100);
+        assertThat(full.get("complete").asBoolean()).isTrue();
+        // directory-level viewers do not see it
+        assertThat(profile(bearer("b@test.com"), empA).get("completion").isNull()).isTrue();
+    }
+
+    @Test
+    void managerAndSystemAdminAreToldOnceWhenTheProfileReachesOneHundredPercent() throws Exception {
+        String a = bearer("a@test.com");
+        saveContact(a, empA, "9876543210", "12 Main Street", "Ravi 9123456780");
+        assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
+        assertThat(completionMessages(bearer("admin@test.com"))).isEmpty();
+
+        photo(a, empA, "me.png", PNG).andExpect(status().isOk());      // the last missing item
+        assertThat(completionMessages(bearer("mgr@test.com"))).containsExactly("Asha Employee has completed their profile.");
+        assertThat(completionMessages(bearer("admin@test.com"))).containsExactly("Asha Employee has completed their profile.");
+        assertThat(completionMessages(bearer("hr@test.com"))).isEmpty();      // only the manager and system admins
+        assertThat(completionMessages(bearer("olga@test.com"))).isEmpty();    // another team's manager
+        assertThat(completionMessages(a)).isEmpty();                          // not the employee themself
+
+        // later edits never repeat it
+        saveContact(a, empA, "1111111111", "New address", "Someone 222");
+        photo(a, empA, "again.png", PNG).andExpect(status().isOk());
+        assertThat(completionMessages(bearer("mgr@test.com"))).hasSize(1);
+        assertThat(completionMessages(bearer("admin@test.com"))).hasSize(1);
+    }
+
+    @Test
+    void withoutAManagerOnlySystemAdminsAreTold() throws Exception {
+        Employee solo = employee("Sam Solo", "sam@test.com", null);
+        account("sam@test.com", Role.EMPLOYEE, solo);
+        String s = bearer("sam@test.com");
+        saveContact(s, solo, "9876543210", "1 Road", "Mum 5555");
+        photo(s, solo, "me.png", PNG).andExpect(status().isOk());
+        assertThat(completionMessages(bearer("admin@test.com"))).containsExactly("Sam Solo has completed their profile.");
+        assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
+    }
+
+    @Test
+    void hrFinishingSomeonesPhotoDoesNotCountAsTheEmployeeCompletingIt() throws Exception {
+        saveContact(bearer("a@test.com"), empA, "9876543210", "12 Main Street", "Ravi 9123456780");
+        photo(bearer("hr@test.com"), empA, "hr.png", PNG).andExpect(status().isOk());
+        assertThat(profile(bearer("a@test.com"), empA).get("completion").get("percent").asInt()).isEqualTo(100);
+        assertThat(completionMessages(bearer("mgr@test.com"))).isEmpty();
+        assertThat(completionMessages(bearer("admin@test.com"))).isEmpty();
+    }
+
+    @Test
+    void aPhotoCanBeRemovedByTheEmployeeOrHrOnly() throws Exception {
+        String a = bearer("a@test.com");
+        photo(a, empA, "me.png", PNG).andExpect(status().isOk());
+        String reference = employees.findById(empA.getId()).orElseThrow().getProfilePhotoUrl();
+        assertThat(storage.files).containsKey(reference);
+
+        mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", bearer("b@test.com")))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", bearer("mgr@test.com")))
+                .andExpect(status().isForbidden());
+        assertThat(storage.files).containsKey(reference);
+
+        mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", a)).andExpect(status().isOk());
+        assertThat(employees.findById(empA.getId()).orElseThrow().getProfilePhotoUrl()).isNull();
+        assertThat(storage.files).doesNotContainKey(reference);
+        assertThat(profile(a, empA).get("profilePhotoUrl").isNull()).isTrue();
+        mvc.perform(get("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", a)).andExpect(status().isNotFound());
+
+        // removing again, or as HR, is harmless
+        mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", a)).andExpect(status().isOk());
+        photo(a, empA, "me.png", PNG).andExpect(status().isOk());
+        mvc.perform(delete("/api/v1/employees/" + empA.getId() + "/photo").header("Authorization", bearer("hr@test.com")))
                 .andExpect(status().isOk());
     }
 }

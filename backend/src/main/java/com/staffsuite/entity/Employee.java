@@ -83,6 +83,10 @@ public class Employee {
     @Column(name = "profile_photo_url", length = 500)
     private String profilePhotoUrl;
 
+    /** When the employee first filled in everything they can (see ProfileCompletionService); null until then. */
+    @Column(name = "profile_completed_at")
+    private Instant profileCompletedAt;
+
     /** Soft delete: set when offboarded. The row and everything pointing at it is retained. */
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;

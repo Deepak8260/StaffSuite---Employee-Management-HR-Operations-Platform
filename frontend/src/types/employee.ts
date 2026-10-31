@@ -61,10 +61,11 @@ export interface EmployeeInput {
   userAccount?: { password: string; role: Role }
 }
 
+/** Fields that are left out are not changed. */
 export interface SelfProfileInput {
-  phone: string
-  address: string
-  emergencyContact: string
+  phone?: string
+  address?: string
+  emergencyContact?: string
 }
 
 export interface EmployeeFilters {
@@ -102,6 +103,19 @@ export interface ProfileAttendanceSummary {
   todayStatus: string | null
 }
 
+export interface ProfileCompletionItem {
+  key: 'photo' | 'phone' | 'address' | 'emergencyContact'
+  label: string
+  done: boolean
+}
+
+/** What the employee can still fill in themself; percent is 0-100. */
+export interface ProfileCompletion {
+  percent: number
+  complete: boolean
+  items: ProfileCompletionItem[]
+}
+
 /** FULL for HR/Admin, the employee and their direct manager; DIRECTORY (name, title, department, photo only) for anyone else. */
 export interface EmployeeProfile {
   id: number
@@ -123,4 +137,5 @@ export interface EmployeeProfile {
   attendance: ProfileAttendanceSummary | null
   documents: EmployeeDocument[] | null
   directReports: DirectoryEntry[] | null
+  completion: ProfileCompletion | null
 }

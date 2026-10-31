@@ -16,6 +16,7 @@ export const TYPE_LABELS: Record<NotificationType, string> = {
   ATTENDANCE_CORRECTION_APPROVED: 'Correction approved',
   ATTENDANCE_CORRECTION_REJECTED: 'Correction rejected',
   DOCUMENT_EXPIRING: 'Document expiring',
+  PROFILE_COMPLETED: 'Profile completed',
 }
 
 /** Where to take the user when they open a notification: the page that shows the item it is about. */
@@ -35,6 +36,8 @@ export function notificationPath(n: NotificationItem, role: Role | undefined): s
       return `/attendance${id ? `?correction=${id}` : ''}`
     case 'DOCUMENT_EXPIRING':
       return '/admin/documents/expiring'
+    case 'PROFILE_COMPLETED':
+      return id ? `/employees/${id}/profile` : null
     default:
       return null
   }

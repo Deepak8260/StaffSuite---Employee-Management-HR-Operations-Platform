@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -106,6 +107,12 @@ public class EmployeeController {
     public EmployeeResponse uploadPhoto(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id,
             @RequestPart("file") MultipartFile file, HttpServletRequest http) {
         return photoService.upload(actor, id, file, http.getRemoteAddr());
+    }
+
+    @DeleteMapping("/{id}/photo")
+    public EmployeeResponse removePhoto(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable Long id,
+            HttpServletRequest http) {
+        return photoService.remove(actor, id, http.getRemoteAddr());
     }
 
     @GetMapping("/{id}/team")
