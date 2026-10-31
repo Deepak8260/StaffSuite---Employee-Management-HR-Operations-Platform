@@ -6,7 +6,6 @@ import { downloadDocument } from '../../api/documents'
 import { errorMessage } from '../../api/axiosInstance'
 import Flash from '../../components/Flash'
 import PhotoEditorModal from '../../components/PhotoEditorModal'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import EmployeeLink from '../../components/ui/EmployeeLink'
 import PhotoAvatar from '../../components/ui/PhotoAvatar'
@@ -26,8 +25,7 @@ const LEAVE_TINTS: Tint[] = ['blue', 'green', 'orange', 'purple', 'red', 'gray']
 
 const reportColumns: Column<DirectoryEntry>[] = [
   { key: 'name', header: 'Name', render: (r) => (
-    <span className="person"><AvatarInitials name={r.fullName} size="sm" />
-      <EmployeeLink id={r.id} className="person-name">{r.fullName}</EmployeeLink></span>
+    <span className="person">      <EmployeeLink id={r.id} className="person-name">{r.fullName}</EmployeeLink></span>
   ) },
   { key: 'title', header: 'Job title', render: (r) => r.jobTitle },
 ]

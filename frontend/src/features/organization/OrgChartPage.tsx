@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { getOrgChart } from '../../api/organization'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
 import { StatusCodePill } from '../../components/ui/StatusPill'
@@ -45,7 +44,6 @@ function OrgTreeNode({ node, collapsed, onToggle, linkable }: NodeProps) {
           <span className="org-toggle spacer" />
         )}
         <span className="person">
-          <AvatarInitials name={node.fullName} size="sm" />
           <span className="person-text">
             <strong className="person-name">{linkable(node.id) ? <Link to={`/employees/${node.id}/profile`}>{node.fullName}</Link> : node.fullName}</strong>
             <span className="org-meta person-meta">

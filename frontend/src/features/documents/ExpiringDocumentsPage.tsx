@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { downloadDocument, listExpiringDocuments } from '../../api/documents'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
@@ -53,7 +52,6 @@ export default function ExpiringDocumentsPage() {
       header: 'Employee',
       render: (d) => (
         <div className="person">
-          <AvatarInitials name={d.employeeName} size="sm" />
           <div className="person-text">
             <span className="person-name">{d.employeeName}</span>
             <span className="person-meta">{d.employeeCode}{d.departmentName ? ` · ${d.departmentName}` : ''}</span>

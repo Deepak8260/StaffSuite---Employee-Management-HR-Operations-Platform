@@ -4,7 +4,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { listDirectory, listEmployees, offboardEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
@@ -135,7 +134,7 @@ export default function EmployeeListPage() {
     { key: 'code', header: 'Code', render: (e) => e.employeeCode },
     { key: 'name', header: 'Name', render: (e) => (
       <Link to={`/employees/${e.id}/profile`} className="person">
-        <AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span>
+<span className="person-name">{e.fullName}</span>
       </Link>
     ) },
     { key: 'title', header: 'Job title', render: (e) => e.jobTitle },
@@ -157,7 +156,7 @@ export default function EmployeeListPage() {
 
   const simpleColumns: Column<DirectoryEntry>[] = [
     { key: 'name', header: 'Name', render: (e) => (
-      <Link to={`/employees/${e.id}/profile`} className="person"><AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span></Link>
+      <Link to={`/employees/${e.id}/profile`} className="person"><span className="person-name">{e.fullName}</span></Link>
     ) },
     { key: 'title', header: 'Job title', render: (e) => e.jobTitle },
     { key: 'dept', header: 'Department', render: (e) => e.departmentName ?? '—' },

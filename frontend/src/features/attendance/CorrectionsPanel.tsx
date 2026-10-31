@@ -5,7 +5,6 @@ import { useSearchParams } from 'react-router-dom'
 import { approveCorrection, listCorrections, rejectCorrection } from '../../api/attendance'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import SectionCard from '../../components/ui/SectionCard'
 import { StatusCodePill } from '../../components/ui/StatusPill'
@@ -87,7 +86,6 @@ export default function CorrectionsPanel({ scope }: Props) {
       header: 'Employee',
       render: (c) => (
         <div className="person">
-          <AvatarInitials name={c.employeeName} size="sm" />
           <div className="person-text">
             <EmployeeLink id={c.employeeId} className="person-name">{c.employeeName}</EmployeeLink>
             <span className="person-meta">{c.employeeCode}</span>

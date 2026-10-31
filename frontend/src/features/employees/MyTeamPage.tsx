@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { getTeam } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
 import Pager from '../../components/Pager'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
@@ -19,7 +18,7 @@ const columns: Column<Employee>[] = [
   { key: 'code', header: 'Code', render: (e) => e.employeeCode },
   { key: 'name', header: 'Name', render: (e) => (
     <Link to={`/employees/${e.id}`} className="person">
-      <AvatarInitials name={e.fullName} size="sm" /><span className="person-name">{e.fullName}</span>
+<span className="person-name">{e.fullName}</span>
     </Link>
   ) },
   { key: 'title', header: 'Job title', render: (e) => e.jobTitle },

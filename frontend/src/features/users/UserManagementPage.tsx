@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/axiosInstance'
 import { createUser, listUsers, updateUserRole, updateUserStatus } from '../../api/users'
 import Pager from '../../components/Pager'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
@@ -63,7 +62,7 @@ export default function UserManagementPage() {
 
   const columns: Column<UserSummary>[] = [
     { key: 'email', header: 'Email', render: (u) => (
-      <span className="person"><AvatarInitials name={u.email} size="sm" /><span className="person-name">{u.email}</span></span>
+      <span className="person"><span className="person-name">{u.email}</span></span>
     ) },
     { key: 'role', header: 'Role', render: (u) => (
       <select

@@ -12,7 +12,6 @@ import { listExpiringDocuments } from '../../api/documents'
 import { getPendingApprovals } from '../../api/notifications'
 import { getHeadcount, getOnboarding } from '../../api/reports'
 import AttendanceBadge from '../../components/AttendanceBadge'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import BuildingArt from '../../components/ui/BuildingArt'
 import QuickActionButton from '../../components/ui/QuickActionButton'
@@ -135,7 +134,6 @@ function LeaveRequestsCard({ requests, viewAllTo, error }: { requests: LeaveRequ
           <ul className="leave-list">
             {requests.map((l) => (
               <li key={l.id}>
-                <AvatarInitials name={l.employeeName} />
                 <span className="grow">
                   <EmployeeLink id={l.employeeId} className="person-name">{l.employeeName}</EmployeeLink>
                   <span className="person-meta">{l.leaveTypeName}</span>

@@ -1,7 +1,6 @@
 import EmployeeLink from '../../components/ui/EmployeeLink'
 import type { ReactNode } from 'react'
 import type { AttendanceSummary, SummaryRow } from '../../types/attendance'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 
 interface Props {
@@ -27,7 +26,6 @@ export default function SummaryTable({ summary, action }: Props) {
       render: ({ row, total }) =>
         total ? <strong>Total</strong> : byEmployee ? (
           <div className="person">
-            <AvatarInitials name={row.label} size="sm" />
             <div className="person-text">
               <EmployeeLink id={row.id} className="person-name">{row.label}</EmployeeLink>
               {row.employeeCode && <span className="person-meta">{row.employeeCode}</span>}

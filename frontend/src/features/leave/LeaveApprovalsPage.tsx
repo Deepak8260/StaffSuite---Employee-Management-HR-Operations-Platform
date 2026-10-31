@@ -5,7 +5,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../../api/axiosInstance'
 import { approveLeave, listLeaveRequests, openAttachment, rejectLeave } from '../../api/leave'
 import Pager from '../../components/Pager'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import DataTable, { type Column } from '../../components/ui/DataTable'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
@@ -93,8 +92,7 @@ export default function LeaveApprovalsPage({ scope }: Props) {
 
   const columns: Column<LeaveRequest>[] = [
     { key: 'employee', header: 'Employee', render: (r) => (
-      <span className="person"><AvatarInitials name={r.employeeName} size="sm" />
-        <span><EmployeeLink id={r.employeeId} className="person-name">{r.employeeName}</EmployeeLink><br /><span className="person-meta">{r.employeeCode}</span></span></span>
+      <span className="person">        <span><EmployeeLink id={r.employeeId} className="person-name">{r.employeeName}</EmployeeLink><br /><span className="person-meta">{r.employeeCode}</span></span></span>
     ) },
     { key: 'type', header: 'Type', render: (r) => r.leaveTypeName },
     { key: 'dates', header: 'Dates', render: (r) => `${formatDateOnly(r.startDate)} – ${formatDateOnly(r.endDate)}` },

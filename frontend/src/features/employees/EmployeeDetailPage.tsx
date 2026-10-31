@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getEmployee, offboardEmployee } from '../../api/employees'
 import { errorMessage } from '../../api/axiosInstance'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import SectionCard from '../../components/ui/SectionCard'
 import { StatusCodePill } from '../../components/ui/StatusPill'
 import { useAuth } from '../../hooks/useAuth'
@@ -85,7 +84,6 @@ export default function EmployeeDetailPage() {
     <main className="page">
       <div className="page-header profile-header">
         <div className="person profile-id">
-          <AvatarInitials name={employee.fullName} size="lg" />
           <div className="person-text">
             <h1>{employee.fullName}</h1>
             <span className="person-meta">{employee.jobTitle}</span>

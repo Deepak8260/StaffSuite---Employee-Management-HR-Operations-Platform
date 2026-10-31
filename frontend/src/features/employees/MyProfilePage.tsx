@@ -1,6 +1,5 @@
 import { Phone, UserRound } from 'lucide-react'
 import Flash from '../../components/Flash'
-import AvatarInitials from '../../components/ui/AvatarInitials'
 import PageHeader from '../../components/ui/PageHeader'
 import SectionCard from '../../components/ui/SectionCard'
 import { useEffect, useState, type FormEvent } from 'react'
@@ -67,7 +66,6 @@ export default function MyProfilePage() {
         <>
           <SectionCard title="Personal details" icon={UserRound} tint="blue">
             <div className="person profile-id">
-              <AvatarInitials name={employee.fullName} size="lg" />
               <div className="person-text">
                 <span className="person-name">{employee.fullName}</span>
                 <span className="person-meta">{employee.jobTitle}</span>
