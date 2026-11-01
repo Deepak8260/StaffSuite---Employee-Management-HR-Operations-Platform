@@ -34,13 +34,14 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-name">Staff<b>Suite</b></span>
-          <button type="button" className="collapse-btn" data-tip={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand sidebar' : undefined} onClick={toggleCollapsed}>
-            {collapsed ? <PanelLeftOpen size={18} aria-hidden="true" /> : <PanelLeftClose size={18} aria-hidden="true" />}
-          </button>
         </div>
         <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} onNavigate={() => setNavOpen(false)} />
       </aside>
+      {/* a round button on the sidebar's right edge; it lives outside the sidebar so the sidebar's scrolling cannot clip it */}
+      <button type="button" className="collapse-btn" data-tip={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={toggleCollapsed}>
+        {collapsed ? <PanelLeftOpen size={17} aria-hidden="true" /> : <PanelLeftClose size={17} aria-hidden="true" />}
+      </button>
       {navOpen && <div className="sidebar-scrim" onClick={() => setNavOpen(false)} />}
       <div className="app-main">
         <Topbar onMenu={() => setNavOpen(true)} />
