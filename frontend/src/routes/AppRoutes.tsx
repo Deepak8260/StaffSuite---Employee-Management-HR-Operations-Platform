@@ -2,7 +2,8 @@ import { useAuth } from '../hooks/useAuth'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProtectedRoute from '../components/ProtectedRoute'
-import ChangePasswordPage from '../features/auth/ChangePasswordPage'
+import AccountProfilePage from '../features/settings/AccountProfilePage'
+import SettingsPage from '../features/settings/SettingsPage'
 import ForgotPasswordPage from '../features/auth/ForgotPasswordPage'
 import LoginPage from '../features/auth/LoginPage'
 import ResetPasswordPage from '../features/auth/ResetPasswordPage'
@@ -32,10 +33,11 @@ import DesignationsPage from '../features/organization/DesignationsPage'
 import OrgChartPage from '../features/organization/OrgChartPage'
 import UserManagementPage from '../features/users/UserManagementPage'
 
-/** "My profile" is the same unified profile page everyone else sees, with the completion bar and photo options. */
-function MyProfileRedirect() {
+/** "My profile": the unified employee profile when the login is linked to an employee, else the account page. */
+function MyProfileRoute() {
   const { user } = useAuth()
-  return <Navigate to={`/employees/${user?.employeeId}/profile`} replace />
+  if (user?.employeeId != null) return <Navigate to={`/employees/${user.employeeId}/profile`} replace />
+  return <AccountProfilePage />
 }
 
 function DirectoryRedirect() {
@@ -58,16 +60,14 @@ export default function AppRoutes() {
         }
       >
         <Route path="/" element={<HomePage />} />
-        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        {/* the old address now opens the password section of Settings */}
+        <Route path="/change-password" element={<Navigate to="/settings?tab=password" replace />} />
         {/* the old standalone Directory page now lives in Employees; keep old links and bookmarks working */}
         <Route path="/directory" element={<DirectoryRedirect />} />
         <Route
           path="/my-profile"
-          element={
-            <ProtectedRoute requireEmployee>
-              <MyProfileRedirect />
-            </ProtectedRoute>
-          }
+          element={<MyProfileRoute />}
         />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/employees/:id/profile" element={<EmployeeProfilePage />} />

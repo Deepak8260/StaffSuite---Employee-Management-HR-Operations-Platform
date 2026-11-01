@@ -1,5 +1,5 @@
 import {
-  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, Lock, type LucideIcon, Network,
+  CalendarDays, ChevronDown, ChevronRight, File, FileText, House, type LucideIcon, Network,
   ShieldCheck, Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -108,7 +108,6 @@ export default function Sidebar({ collapsed, onToggleCollapsed, onNavigate }: Pr
       {documentsTo && <SideLink to={documentsTo} label="Documents" icon={File} tone="slate" end />}
       <div className="side-rule" />
       {admin.length > 0 && <SideGroup group={{ label: 'Admin', icon: ShieldCheck, tone: 'slate', items: admin }} onExpandSidebar={onToggleCollapsed} collapsed={collapsed} />}
-      <SideLink to="/change-password" label="Change Password" icon={Lock} tone="slate" />
     </nav>
   )
 }
