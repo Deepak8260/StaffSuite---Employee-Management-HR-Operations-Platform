@@ -1,6 +1,7 @@
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import logo from '../assets/logo.png'
 import Sidebar from './shell/Sidebar'
 import Topbar from './shell/Topbar'
 
@@ -32,7 +33,8 @@ export default function Layout() {
   return (
     <div className={`app-shell ${navOpen ? 'nav-open' : ''} ${collapsed ? 'collapsed' : ''}`}>
       <aside className="sidebar">
-        <div className="brand">
+        <div className="brand" aria-label="StaffSuite">
+          <img className="brand-logo" src={logo} alt="" />
           <span className="brand-name">Staff<b>Suite</b></span>
         </div>
         <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} onNavigate={() => setNavOpen(false)} />
