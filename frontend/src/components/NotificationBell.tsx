@@ -128,7 +128,7 @@ export default function NotificationBell() {
       <button type="button" className="bell-button" onClick={toggle} aria-expanded={open}
         aria-label={count > 0 ? `Notifications, ${count} unread` : 'Notifications'}>
         <Bell size={18} aria-hidden="true" />
-        {count > 0 && <span className="bell-badge">{count > 99 ? '99+' : count}</span>}
+        {count > 0 && <span className="bell-badge">{count > 10 ? '10+' : count}</span>}
       </button>
 
       {open && (
