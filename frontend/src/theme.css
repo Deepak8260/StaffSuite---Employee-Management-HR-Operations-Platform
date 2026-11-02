@@ -605,3 +605,15 @@ a.oc-name:hover { color: var(--primary); text-decoration: underline; }
 .org-legend .oc-dept { margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem; }
 .org-legend i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--tint-fg); }
 @media (max-width: 640px) { .org-search { min-width: 0; flex: 1; } .org-search-wrap { flex: 1; width: 100%; } }
+
+/* drag the sidebar's right edge to resize it */
+.sidebar-resizer { position: fixed; z-index: 44; top: 0; bottom: 0; left: calc(var(--sidebar-w) - 3px); width: 7px; cursor: col-resize; touch-action: none; transition: left 0.15s; }
+.sidebar-resizer::after { content: ''; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: var(--primary); opacity: 0; transition: opacity 0.12s; }
+.sidebar-resizer:hover::after, .app-shell.resizing .sidebar-resizer::after { opacity: 0.55; }
+.sidebar-resizer-tip { position: fixed; left: calc(var(--sidebar-w) + 12px); transform: translateY(-50%); padding: 0.4rem 0.65rem; border-radius: 6px; background: #1f2937; color: #fff; font-size: 0.75rem; font-weight: 500; line-height: 1.2; white-space: nowrap; box-shadow: 0 4px 12px rgba(16, 24, 40, 0.2); pointer-events: none; opacity: 0; transition: opacity 0.12s ease 0.25s; }
+.sidebar-resizer:hover .sidebar-resizer-tip { opacity: 1; }
+.app-shell.resizing .sidebar-resizer-tip { opacity: 0; }
+.app-shell.resizing { cursor: col-resize; user-select: none; }
+.app-shell.resizing .sidebar, .app-shell.resizing .app-main, .app-shell.resizing .collapse-btn, .app-shell.resizing .sidebar-resizer { transition: none; }
+.app-shell.collapsed .sidebar-resizer { display: none; }
+@media (max-width: 900px) { .sidebar-resizer { display: none; } }
