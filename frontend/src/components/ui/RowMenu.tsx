@@ -54,12 +54,12 @@ export default function RowMenu({ label, items }: { label: string; items: RowMen
   return (
     <>
       <button ref={button} type="button" className="row-menu-btn" aria-label={label} aria-haspopup="menu" aria-expanded={pos !== null} onClick={toggle}>
-        <MoreVertical size={18} aria-hidden="true" />
+        <MoreVertical size={16} aria-hidden="true" />
       </button>
       {pos && (
         <div ref={menu} className="row-menu" role="menu" style={{ left: pos.left, top: pos.top }}>
           {items.map(({ label: text, icon: Icon, to, onSelect, danger }) => {
-            const content = <><Icon size={17} aria-hidden="true" /> {text}</>
+            const content = <><Icon size={15} aria-hidden="true" /> {text}</>
             const cls = `row-menu-item ${danger ? 'danger-item' : ''}`
             return to
               ? <Link key={text} to={to} role="menuitem" className={cls} onClick={() => setPos(null)}>{content}</Link>

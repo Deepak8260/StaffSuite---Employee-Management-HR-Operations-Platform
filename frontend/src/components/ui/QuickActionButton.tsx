@@ -12,7 +12,7 @@ interface Props {
 export default function QuickActionButton({ to, icon: Icon, tint, label }: Props) {
   return (
     <Link to={to} className={`quick-action tint-${tint}`}>
-      <Icon size={22} aria-hidden="true" />
+      <Icon size={20} aria-hidden="true" />
       <span>{label}</span>
     </Link>
   )

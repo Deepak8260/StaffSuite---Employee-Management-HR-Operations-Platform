@@ -26,7 +26,7 @@ function SideLink({ to, label, icon: Icon, tone, end, fill }: {
 }) {
   return (
     <NavLink to={to} end={end} title={label} className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}>
-      <Icon size={20} strokeWidth={1.9} className={`ico ico-${tone}`} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />
+      <Icon size={18} strokeWidth={1.9} className={`ico ico-${tone}`} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />
       <span className="side-label">{label}</span>
     </NavLink>
   )
@@ -46,9 +46,9 @@ function SideGroup({ group, onExpandSidebar, collapsed }: { group: GroupDef; onE
     <div className="side-group">
       <button type="button" title={group.label} className={`side-link side-group-button ${containsActive ? 'has-active' : ''}`}
         aria-expanded={expanded} onClick={() => (collapsed ? onExpandSidebar() : setOpen(!expanded))}>
-        <Icon size={20} strokeWidth={1.9} className={`ico ico-${group.tone}`} aria-hidden="true" />
+        <Icon size={18} strokeWidth={1.9} className={`ico ico-${group.tone}`} aria-hidden="true" />
         <span className="side-label">{group.label}</span>
-        {expanded ? <ChevronDown size={16} className="chevron" aria-hidden="true" /> : <ChevronRight size={16} className="chevron" aria-hidden="true" />}
+        {expanded ? <ChevronDown size={14} className="chevron" aria-hidden="true" /> : <ChevronRight size={14} className="chevron" aria-hidden="true" />}
       </button>
       {expanded && (
         <div className="side-sub">

@@ -79,7 +79,7 @@ export default function BulkUploadModal({ onClose, onCreated }: Props) {
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Bulk upload employees">
       <div className="modal bulk-modal">
         <button type="button" className="modal-x" aria-label="Close" onClick={onClose} disabled={busy}>
-          <X size={20} aria-hidden="true" />
+          <X size={18} aria-hidden="true" />
         </button>
         <h2>Bulk upload employees</h2>
         <p className="hint">Add many employees at once from an Excel file.</p>
@@ -91,7 +91,7 @@ export default function BulkUploadModal({ onClose, onCreated }: Props) {
         </div>
         <p>
           <button type="button" className="link-button" onClick={template}>
-            <Download size={15} aria-hidden="true" /> Download template
+            <Download size={14} aria-hidden="true" /> Download template
           </button>
         </p>
 

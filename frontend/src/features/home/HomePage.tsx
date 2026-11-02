@@ -203,7 +203,7 @@ function AdminHome() {
       <div className="stat-grid">
         <StatCard icon={Users} tint="blue" label="Total Employees" value={data?.total ?? '—'}
           trend={data?.hiredThisMonth == null ? undefined : data.hiredThisMonth > 0
-            ? <span className="t-green"><ArrowUp size={14} aria-hidden="true" /> {data.hiredThisMonth} joined this month</span>
+            ? <span className="t-green"><ArrowUp size={13} aria-hidden="true" /> {data.hiredThisMonth} joined this month</span>
             : <span className="t-muted">0 joined this month</span>} />
         <StatCard icon={CalendarCheck} tint="green" label="Present Today" value={presentToday ?? '—'}
           trend={t ? (counted === 0 ? <span className="t-muted">Weekend or holiday</span>

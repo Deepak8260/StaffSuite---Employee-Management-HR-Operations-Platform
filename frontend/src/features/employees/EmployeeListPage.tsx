@@ -192,12 +192,12 @@ export default function EmployeeListPage() {
         actions={canManage && (
           <>
             <button type="button" className="secondary" onClick={exportToExcel} disabled={exporting}>
-              <FileDown size={16} aria-hidden="true" /> {exporting ? 'Exporting…' : 'Export to Excel'}
+              <FileDown size={14} aria-hidden="true" /> {exporting ? 'Exporting…' : 'Export to Excel'}
             </button>
             <button type="button" className="secondary" onClick={() => setBulkOpen(true)}>
-              <FileSpreadsheet size={16} aria-hidden="true" /> Bulk Upload
+              <FileSpreadsheet size={14} aria-hidden="true" /> Bulk Upload
             </button>
-            <Link to="/employees/new" className="button"><Plus size={16} aria-hidden="true" /> New employee</Link>
+            <Link to="/employees/new" className="button"><Plus size={14} aria-hidden="true" /> New employee</Link>
           </>
         )}
       />

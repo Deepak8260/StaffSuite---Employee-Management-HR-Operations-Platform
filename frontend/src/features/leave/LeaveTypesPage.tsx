@@ -112,7 +112,7 @@ export default function LeaveTypesPage() {
           </label>
           <input type="number" min={0} max={366} step="0.5" placeholder="Max carry-forward days" value={carry ? maxCarry : '0'}
             disabled={!carry} onChange={(e) => setMaxCarry(e.target.value)} />
-          <input placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} size={30} />
+          <input placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} size={27} />
           <button type="submit">{editing ? 'Save' : 'Create'}</button>
           {editing && <button type="button" onClick={() => startEdit(null)}>Cancel</button>}
         </form>

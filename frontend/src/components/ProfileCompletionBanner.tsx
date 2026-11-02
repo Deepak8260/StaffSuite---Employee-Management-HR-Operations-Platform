@@ -23,7 +23,7 @@ export default function ProfileCompletionBanner() {
   if (employeeId === null || !completion || completion.complete) return null
   return (
     <div className="completion-banner" role="status">
-      <UserRoundCheck size={22} aria-hidden="true" />
+      <UserRoundCheck size={20} aria-hidden="true" />
       <div className="completion-banner-text">
         <strong>Complete your profile: {completion.percent}% done</strong>
         <div className="progress small" aria-hidden="true"><span style={{ width: `${completion.percent}%` }} /></div>

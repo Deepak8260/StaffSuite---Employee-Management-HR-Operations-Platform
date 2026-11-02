@@ -53,12 +53,12 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   return (
     <header className="topbar">
       <button type="button" className="icon-button menu-toggle" aria-label="Open navigation" onClick={onMenu}>
-        <Menu size={20} aria-hidden="true" />
+        <Menu size={18} aria-hidden="true" />
       </button>
 
       {user.role === 'EMPLOYEE' ? <span className="topbar-spacer" /> : (
         <form className="global-search" role="search" onSubmit={search}>
-          <Search size={18} aria-hidden="true" />
+          <Search size={16} aria-hidden="true" />
           <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder="Search employees, documents, leave requests..." aria-label="Search" />
         </form>
@@ -69,7 +69,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
           <button type="button" className="bell-button theme-toggle" onClick={toggle}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-            {theme === 'dark' ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+            {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
           </button>
           <NotificationBell />
         </div>
@@ -80,7 +80,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
               <span className="user-name">{fullName}</span>
               <span className="user-role">{user.role}</span>
             </span>
-            <ChevronDown size={16} aria-hidden="true" />
+            <ChevronDown size={14} aria-hidden="true" />
           </button>
           {menuOpen && (
             <div className="user-dropdown" role="menu">
@@ -89,9 +89,9 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
                 <span className="hint">{user.email}</span>
                 <StatusPill tone="info">{ROLE_LABEL[user.role]} / {user.role}</StatusPill>
               </div>
-              <Link to="/my-profile" role="menuitem"><UserRound size={16} aria-hidden="true" /> My Profile</Link>
-              <Link to="/settings" role="menuitem"><Settings size={16} aria-hidden="true" /> Settings</Link>
-              <button type="button" role="menuitem" onClick={handleLogout}><LogOut size={16} aria-hidden="true" /> Log out</button>
+              <Link to="/my-profile" role="menuitem"><UserRound size={14} aria-hidden="true" /> My Profile</Link>
+              <Link to="/settings" role="menuitem"><Settings size={14} aria-hidden="true" /> Settings</Link>
+              <button type="button" role="menuitem" onClick={handleLogout}><LogOut size={14} aria-hidden="true" /> Log out</button>
             </div>
           )}
         </div>

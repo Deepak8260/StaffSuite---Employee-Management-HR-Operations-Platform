@@ -60,7 +60,7 @@ function AccountTab() {
       </p>
       <div className="settings-actions">
         <button type="button" className="secondary" onClick={async () => { await logout(); navigate('/login', { replace: true }) }}>
-          <LogOut size={16} aria-hidden="true" /> Log out
+          <LogOut size={14} aria-hidden="true" /> Log out
         </button>
       </div>
     </SectionCard>
@@ -71,7 +71,7 @@ function AppearanceTab() {
   const { theme, setTheme } = useTheme()
   const option = (value: Theme, label: string, hint: string, Icon: typeof Sun) => (
     <button type="button" role="radio" aria-checked={theme === value} className={`theme-card ${theme === value ? 'selected' : ''}`} onClick={() => setTheme(value)}>
-      <Icon size={22} aria-hidden="true" />
+      <Icon size={20} aria-hidden="true" />
       <strong>{label}</strong>
       <span>{hint}</span>
     </button>
@@ -125,7 +125,7 @@ export default function SettingsPage() {
           {TABS.map(({ key, label, icon: Icon }) => (
             <button key={key} type="button" className={`settings-tab ${tab === key ? 'active' : ''}`} aria-current={tab === key ? 'page' : undefined}
               onClick={() => setParams({ tab: key }, { replace: true })}>
-              <Icon size={18} aria-hidden="true" /> {label}
+              <Icon size={16} aria-hidden="true" /> {label}
             </button>
           ))}
         </nav>

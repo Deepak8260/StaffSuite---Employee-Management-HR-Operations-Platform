@@ -85,7 +85,7 @@ export default function DocumentCategoriesPage() {
       <SectionCard title={editing ? `Edit "${editing.name}"` : 'New category'} icon={FolderPlus} tint="purple">
         <form onSubmit={handleSubmit} className="inline-form">
           <input placeholder="Name (e.g. ID Proof)" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required />
-          <input placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} size={40} />
+          <input placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} size={36} />
           <button type="submit">{editing ? 'Save' : 'Create'}</button>
           {editing && <button type="button" onClick={() => startEdit(null)}>Cancel</button>}
         </form>

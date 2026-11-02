@@ -22,12 +22,12 @@ export default function SectionCard({ title, icon: Icon, tint = 'blue', viewAllT
     <section className={`section-card ${className}`}>
       {(title || actions || viewAllTo) && <header className="section-head">
         <h2>
-          {Icon && <span className={`icon-square sm tint-${tint}`}><Icon size={22} aria-hidden="true" /></span>}
+          {Icon && <span className={`icon-square sm tint-${tint}`}><Icon size={20} aria-hidden="true" /></span>}
           {title}
         </h2>
         <div className="section-head-right">
           {actions}
-          {viewAllTo && <Link className="view-all" to={viewAllTo}>{viewAllLabel}<ArrowRight size={15} aria-hidden="true" /></Link>}
+          {viewAllTo && <Link className="view-all" to={viewAllTo}>{viewAllLabel}<ArrowRight size={14} aria-hidden="true" /></Link>}
         </div>
       </header>}
       <div className="section-body">{children}</div>

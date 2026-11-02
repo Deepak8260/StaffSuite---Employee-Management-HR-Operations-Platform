@@ -121,7 +121,7 @@ export default function PhotoEditorModal({ file, busy = false, onCancel, onApply
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Edit photo">
       <div className="modal photo-editor">
-        <button type="button" className="modal-x" aria-label="Cancel" onClick={onCancel} disabled={busy}><X size={20} aria-hidden="true" /></button>
+        <button type="button" className="modal-x" aria-label="Cancel" onClick={onCancel} disabled={busy}><X size={18} aria-hidden="true" /></button>
         <h2>Edit your photo</h2>
         <p className="hint">Drag to reposition. The circle shows what will be used.</p>
 
@@ -141,8 +141,8 @@ export default function PhotoEditorModal({ file, busy = false, onCancel, onApply
           {slider('Contrast', 'contrast', 50, 150, 1, `${adjust.contrast}%`)}
           {slider('Colour', 'saturation', 0, 200, 1, `${adjust.saturation}%`)}
           <div className="editor-row">
-            <button type="button" className="secondary" disabled={!img || busy} onClick={() => change({ rotation: (adjust.rotation + 270) % 360 })}><RotateCcw size={16} aria-hidden="true" /> Rotate left</button>
-            <button type="button" className="secondary" disabled={!img || busy} onClick={() => change({ rotation: (adjust.rotation + 90) % 360 })}><RotateCw size={16} aria-hidden="true" /> Rotate right</button>
+            <button type="button" className="secondary" disabled={!img || busy} onClick={() => change({ rotation: (adjust.rotation + 270) % 360 })}><RotateCcw size={14} aria-hidden="true" /> Rotate left</button>
+            <button type="button" className="secondary" disabled={!img || busy} onClick={() => change({ rotation: (adjust.rotation + 90) % 360 })}><RotateCw size={14} aria-hidden="true" /> Rotate right</button>
             <button type="button" className="secondary" disabled={!img || busy} onClick={() => { setAdjust(NEUTRAL); setOffset({ x: 0, y: 0 }) }}>Reset</button>
           </div>
         </div>

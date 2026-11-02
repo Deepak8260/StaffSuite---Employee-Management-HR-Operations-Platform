@@ -40,7 +40,7 @@ export default function LoginPage() {
         <label>
           Email
           <span className="auth-field">
-            <Mail size={20} strokeWidth={1.7} aria-hidden="true" />
+            <Mail size={18} strokeWidth={1.7} aria-hidden="true" />
             <input type="email" value={email} placeholder="Enter your email address" autoComplete="username"
               onChange={(e) => setEmail(e.target.value)} required autoFocus />
           </span>
@@ -48,12 +48,12 @@ export default function LoginPage() {
         <label>
           Password
           <span className="auth-field">
-            <Lock size={20} strokeWidth={1.7} aria-hidden="true" />
+            <Lock size={18} strokeWidth={1.7} aria-hidden="true" />
             <input type={showPassword ? 'text' : 'password'} value={password} placeholder="Enter your password"
               autoComplete="current-password" onChange={(e) => setPassword(e.target.value)} required />
             <button type="button" className="auth-eye" aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword((s) => !s)}>
-              {showPassword ? <Eye size={20} aria-hidden="true" /> : <EyeOff size={20} aria-hidden="true" />}
+              {showPassword ? <Eye size={18} aria-hidden="true" /> : <EyeOff size={18} aria-hidden="true" />}
             </button>
           </span>
         </label>

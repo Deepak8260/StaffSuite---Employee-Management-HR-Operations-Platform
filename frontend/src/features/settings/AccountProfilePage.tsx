@@ -52,7 +52,7 @@ export default function AccountProfilePage() {
             record when the person is added in Employees.
           </p>
           <div className="settings-actions">
-            <Link to="/settings" className="button secondary"><Settings size={16} aria-hidden="true" /> Open Settings</Link>
+            <Link to="/settings" className="button secondary"><Settings size={14} aria-hidden="true" /> Open Settings</Link>
           </div>
         </SectionCard>
       </div>

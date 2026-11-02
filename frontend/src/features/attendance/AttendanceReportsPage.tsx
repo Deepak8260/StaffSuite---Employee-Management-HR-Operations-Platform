@@ -81,7 +81,7 @@ export default function AttendanceReportsPage() {
         title="Attendance reports"
         description="Counts are employee-days. Absent means a working day with no check-in and no approved leave."
         actions={summary && summary.rows.length > 0 ? (
-          <button onClick={() => downloadCsv(summary)}><Download size={16} aria-hidden="true" /> Export CSV</button>
+          <button onClick={() => downloadCsv(summary)}><Download size={14} aria-hidden="true" /> Export CSV</button>
         ) : undefined}
       />
       <SectionCard title="Employee lookup" icon={UserSearch} tint="blue">

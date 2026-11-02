@@ -113,7 +113,7 @@ export default function DepartmentsPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             maxLength={500}
-            size={40}
+            size={36}
           />
           <button type="submit">{editing ? 'Save' : 'Create'}</button>
           {editing && <button type="button" onClick={() => startEdit(null)}>Cancel</button>}

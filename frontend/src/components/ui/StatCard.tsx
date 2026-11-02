@@ -14,7 +14,7 @@ interface Props {
 export default function StatCard({ icon: Icon, tint, label, value, trend }: Props) {
   return (
     <div className="stat-card">
-      <span className={`icon-square tint-${tint}`}><Icon size={22} aria-hidden="true" /></span>
+      <span className={`icon-square tint-${tint}`}><Icon size={20} aria-hidden="true" /></span>
       <div className="stat-body">
         <span className="stat-label">{label}</span>
         <span className="stat-value">{value}</span>

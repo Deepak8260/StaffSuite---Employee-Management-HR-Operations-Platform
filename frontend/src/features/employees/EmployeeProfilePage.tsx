@@ -235,10 +235,10 @@ export default function EmployeeProfilePage() {
   const header = (
     <div className="profile-bar">
       {user?.role === 'EMPLOYEE'
-        ? <Link to="/" className="back-link"><ArrowLeft size={16} aria-hidden="true" /> Back to Home</Link>
-        : <Link to="/employees" className="back-link" onClick={goBack}><ArrowLeft size={16} aria-hidden="true" /> Back to {canManage ? 'Employees' : 'My team'}</Link>}
+        ? <Link to="/" className="back-link"><ArrowLeft size={14} aria-hidden="true" /> Back to Home</Link>
+        : <Link to="/employees" className="back-link" onClick={goBack}><ArrowLeft size={14} aria-hidden="true" /> Back to {canManage ? 'Employees' : 'My team'}</Link>}
       {canManage && current && (
-        <Link to={`/employees/${employeeId}/edit`} className="button"><Pencil size={15} aria-hidden="true" /> Edit</Link>
+        <Link to={`/employees/${employeeId}/edit`} className="button"><Pencil size={14} aria-hidden="true" /> Edit</Link>
       )}
     </div>
   )
@@ -297,16 +297,16 @@ export default function EmployeeProfilePage() {
               <>
                 <button type="button" className="photo-edit" aria-label="Photo options" title="Photo options" aria-haspopup="menu" aria-expanded={menuOpen}
                   disabled={uploading} onClick={() => setMenuOpen((o) => !o)}>
-                  <Pencil size={16} aria-hidden="true" />
+                  <Pencil size={14} aria-hidden="true" />
                 </button>
                 {menuOpen && (
                   <div className="photo-menu" role="menu">
-                    {current.profilePhotoUrl && <button type="button" role="menuitem" onClick={viewPhoto}><Eye size={16} aria-hidden="true" /> View photo</button>}
-                    {current.profilePhotoUrl && <button type="button" role="menuitem" onClick={editPhoto}><SlidersHorizontal size={16} aria-hidden="true" /> Edit photo</button>}
+                    {current.profilePhotoUrl && <button type="button" role="menuitem" onClick={viewPhoto}><Eye size={14} aria-hidden="true" /> View photo</button>}
+                    {current.profilePhotoUrl && <button type="button" role="menuitem" onClick={editPhoto}><SlidersHorizontal size={14} aria-hidden="true" /> Edit photo</button>}
                     <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); fileInput.current?.click() }}>
-                      <ImagePlus size={16} aria-hidden="true" /> {current.profilePhotoUrl ? 'Upload new photo' : 'Upload photo'}
+                      <ImagePlus size={14} aria-hidden="true" /> {current.profilePhotoUrl ? 'Upload new photo' : 'Upload photo'}
                     </button>
-                    {current.profilePhotoUrl && <button type="button" role="menuitem" className="danger-item" onClick={() => { setMenuOpen(false); setConfirmRemove(true) }}><Trash2 size={16} aria-hidden="true" /> Remove photo</button>}
+                    {current.profilePhotoUrl && <button type="button" role="menuitem" className="danger-item" onClick={() => { setMenuOpen(false); setConfirmRemove(true) }}><Trash2 size={14} aria-hidden="true" /> Remove photo</button>}
                   </div>
                 )}
                 <input ref={fileInput} type="file" accept="image/png,image/jpeg" hidden onChange={onPhotoChosen} />
@@ -345,7 +345,7 @@ export default function EmployeeProfilePage() {
             <ul className="completion-list">
               {c.items.map((i) => (
                 <li key={i.key} className={i.done ? 'done' : ''}>
-                  {i.done ? <CheckCircle2 size={18} aria-hidden="true" /> : <Circle size={18} aria-hidden="true" />}
+                  {i.done ? <CheckCircle2 size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}
                   <span>{i.label}</span>
                   {!i.done && i.key === 'photo' && canChangePhoto && (
                     <button type="button" className="secondary" onClick={() => fileInput.current?.click()}>Add photo</button>
@@ -370,7 +370,7 @@ export default function EmployeeProfilePage() {
 
       <div className="profile-grid">
         <SectionCard title="Contact & Employment" icon={Briefcase} tint="blue"
-          actions={full && isSelf && !editingContact ? <button type="button" className="secondary" onClick={startEditingContact}><Pencil size={15} aria-hidden="true" /> Edit</button> : undefined}>
+          actions={full && isSelf && !editingContact ? <button type="button" className="secondary" onClick={startEditingContact}><Pencil size={14} aria-hidden="true" /> Edit</button> : undefined}>
           {full && editingContact ? (
             <form className="contact-form" onSubmit={saveContactForm}>
               <label>Phone number<input value={contactForm.phone} maxLength={25} inputMode="tel" onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} /></label>
@@ -434,7 +434,7 @@ export default function EmployeeProfilePage() {
 
         {full && current.documents && (
           <SectionCard title="Documents" icon={FileText} tint="purple" className="profile-docs"
-            actions={(canManage || isSelf) ? <Link to={uploadHref} className="button secondary"><Upload size={15} aria-hidden="true" /> Upload</Link> : undefined}>
+            actions={(canManage || isSelf) ? <Link to={uploadHref} className="button secondary"><Upload size={14} aria-hidden="true" /> Upload</Link> : undefined}>
             <DocumentList documents={current.documents} onView={setViewing} onDownload={(d) => { void downloadDocument(d) }} emptyText="No documents yet." />
           </SectionCard>
         )}
@@ -447,14 +447,14 @@ export default function EmployeeProfilePage() {
       )}
 
       {!full && (
-        <p className="hint profile-note"><UserRound size={14} aria-hidden="true" /> You can see directory details for this person.</p>
+        <p className="hint profile-note"><UserRound size={13} aria-hidden="true" /> You can see directory details for this person.</p>
       )}
 
       {editing && <PhotoEditorModal file={editing} busy={uploading} onCancel={() => setEditing(null)} onApply={savePhoto} />}
       {viewUrl && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Profile photo" onMouseDown={(e) => e.target === e.currentTarget && setViewUrl(null)}>
           <div className="modal photo-view">
-            <button type="button" className="modal-x" aria-label="Close" onClick={() => setViewUrl(null)}><X size={20} aria-hidden="true" /></button>
+            <button type="button" className="modal-x" aria-label="Close" onClick={() => setViewUrl(null)}><X size={18} aria-hidden="true" /></button>
             <img src={viewUrl} alt={current.fullName} />
           </div>
         </div>
