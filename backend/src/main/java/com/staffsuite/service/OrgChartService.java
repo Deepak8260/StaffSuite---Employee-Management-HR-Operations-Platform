@@ -76,7 +76,8 @@ public class OrgChartService {
             }
         }
         return new OrgNode(e.getId(), e.getEmployeeCode(), e.getFullName(), e.getJobTitle(),
-                e.getDepartment() == null ? null : e.getDepartment().getName(), e.getEmploymentStatus(), children);
+                e.getDepartment() == null ? null : e.getDepartment().getName(), e.getEmploymentStatus(),
+                e.getProfilePhotoUrl() != null, children);
     }
 
     private static List<Employee> sorted(List<Employee> list) {

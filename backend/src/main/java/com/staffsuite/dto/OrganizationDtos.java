@@ -45,6 +45,6 @@ public final class OrganizationDtos {
     }
 
     public record OrgNode(Long id, String employeeCode, String fullName, String jobTitle, String departmentName,
-            EmploymentStatus employmentStatus, List<OrgNode> children) {
+            EmploymentStatus employmentStatus, boolean hasPhoto, List<OrgNode> children) {
     }
 }

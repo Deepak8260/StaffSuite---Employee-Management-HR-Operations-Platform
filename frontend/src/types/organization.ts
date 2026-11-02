@@ -37,6 +37,7 @@ export interface OrgNode {
   jobTitle: string
   departmentName: string | null
   employmentStatus: EmploymentStatus
+  hasPhoto: boolean
   children: OrgNode[]
 }
 
